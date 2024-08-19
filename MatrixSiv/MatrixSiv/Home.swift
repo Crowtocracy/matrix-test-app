@@ -29,18 +29,11 @@ struct Home: View {
         ScrollView {
             VStack {
                 ForEach(rooms, id: \.id) { room in
-//              if let room = rooms.first {
                     HStack {
                         Image(systemName: "shared.with.you.circle")
-                        .size(30)
                       Text(room.name)
-
                     }
-              } 
-//          else {
-//                Text("no")
-//              }
-
+              }
                 Spacer()
             }
         }
@@ -50,38 +43,11 @@ struct Home: View {
  
 }
 
-
-
-
-
 extension View {
     func size(_ size: CGFloat) -> some View {
         return self.frame(width: size, height: size)
     }
 }
-//extension Room: Hashable, Identifiable {
-//    var identifier: String {
-//        self.id()
-//    }
-//    public func hash(into hasher: inout Hasher) {
-//        return hasher.combine(identifier)
-//    }
-//    public static func == (lhs: MatrixRustSDK.Room, rhs: MatrixRustSDK.Room) -> Bool {
-//        lhs.id() == rhs.id()
-//    }
-//}
-//
-//extension RoomListItem: Hashable, Identifiable {
-//    var identifier: String {
-//        self.id()
-//    }
-//    public func hash(into hasher: inout Hasher) {
-//        return hasher.combine(identifier)
-//    }
-//    public static func == (lhs: MatrixRustSDK.RoomListItem, rhs: MatrixRustSDK.RoomListItem) -> Bool {
-//        lhs.id() == rhs.id()
-//    }
-//}
 
 
 

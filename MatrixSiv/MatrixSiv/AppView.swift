@@ -24,7 +24,6 @@ struct AppView: View {
   @State var cancellables = Set<AnyCancellable>()
     var body: some View {
         if let client {
-          Text("AppView rooms count: \(rooms.count)")
           Home(client: client, rooms: $rooms)
         } else {
             Text("Logging In")
@@ -45,6 +44,28 @@ struct AppView: View {
                         let roomListService = syncService.roomListService()
 
                         let roomList = try await roomListService.allRooms()
+
+                        sendQueueListenerTaskHandle = client.subscribeToSendQueueStatus(listener: SendQueueRoomErrorListenerProxy { roomID, error in
+                          print("Send queue failed in room: \(roomID) with error: \(error)")
+                          self.sendQueueStatusSubject.send(false)
+                        })
+
+                        sendQueueStatusSubject
+                        // .combineLatest(networkMonitor.reachabilityPublisher)
+                          .combineLatest(Just<ReachabilityStatus>(.reachable))
+                          .debounce(for: 1.0, scheduler: DispatchQueue.main)
+                          .sink { enabled, reachability in
+                            print("Send queue status changed to enabled: \(enabled), reachability: \(reachability)")
+
+                            if enabled == false, reachability == .reachable {
+                              print("Enabling all send queues")
+                              Task {
+                                await client.enableAllSendQueues(enable: true)
+                              }
+                            }
+                          }
+                          .store(in: &cancellables)
+
                         let listUpdatesSubscriptionResult = roomList.entriesWithDynamicAdapters(pageSize: UInt32(200), listener: RoomListEntriesListenerProxy { updates in
                           diffsPublisher.send(updates)
                         })
@@ -56,41 +77,11 @@ struct AppView: View {
                               print("state loaded")
 
                               listUpdatesSubscriptionResult.controller().resetToOnePage()
-                              //                          _ = listUpdatesSubscriptionResult.controller().setFilter(kind: .none)
                               _ = listUpdatesSubscriptionResult.controller().setFilter(kind: .all(filters: [.nonLeft]))
                             }
 
                           })
-
                           stateUpdatesTaskHandle = stateUpdatesSubscriptionResult.stateStream
-                        
-                        sendQueueListenerTaskHandle = client.subscribeToSendQueueStatus(listener: SendQueueRoomErrorListenerProxy { roomID, error in
-                          print("Send queue failed in room: \(roomID) with error: \(error)")
-                          self.sendQueueStatusSubject.send(false)
-                        })
-
-                        sendQueueStatusSubject
-                          // .combineLatest(networkMonitor.reachabilityPublisher)
-                          .combineLatest(Just<ReachabilityStatus>(.reachable))
-                          .debounce(for: 1.0, scheduler: DispatchQueue.main)
-                          .sink { enabled, reachability in
-                            print("Send queue status changed to enabled: \(enabled), reachability: \(reachability)")
-
-                            if enabled == false, reachability == .reachable {
-                              print("Enabling all send queues")
-                              Task {
-                                await client.enableAllSendQueues(enable: true)
-                                _ = roomList.entries(listener:  RoomListEntriesListenerProxy { updates in
-                                  print("updates happening")
-                                  print(updates)
-                                  //                            guard let self else { return }
-                                  diffsPublisher.send(updates)
-                                })
-                                print("rooms count: \(rooms.count)")
-                              }
-                            }
-                          }
-                          .store(in: &cancellables)
 
                       }
                     } catch {
@@ -103,98 +94,10 @@ struct AppView: View {
 
 
   func updateRoomsWithDiffs(_ diffs: [RoomListEntriesUpdate]) {
-
     rooms = diffs.reduce(rooms) { currentItems, diff in
-//      _ = diffs.reduce(rooms) { currentItems, diff in
         processDiff(diff, on: currentItems)
       }
-
-    print("udpateroomswithdiffs, room count: \(rooms.count)")
-
   }
-
-//  private func processDiff(_ diff: RoomListEntriesUpdate, on currentItems: [RoomListItem]) -> [RoomListItem] {
-//    var updatedItems = currentItems
-//    switch diff {
-//    case .append(let values):
-//      print("diff append")
-//        updatedItems.append(contentsOf: values)
-//    case .reset(let values):
-//      print("reset append \(values.count)")
-//        updatedItems = values
-//    default:
-//        break
-//    }
-////    return Array(Set(updatedItems)) // Remove duplicates
-//    return updatedItems // Remove duplicates
-//}
-
-//  private func processDiff(_ diff: RoomListEntriesUpdate, on currentItems: [RoomListItem]) -> [RoomListItem] {
-//    print(diff)
-//    guard let collectionDiff = buildDiff(from: diff, on: currentItems) else {
-//      return currentItems
-//    }
-//
-//    guard let updatedItems = currentItems.applying(collectionDiff) else {
-//      return currentItems
-//    }
-//
-//    return updatedItems
-//  }
-//
-//  private func buildDiff(from diff: RoomListEntriesUpdate, on rooms: [RoomListItem]) -> CollectionDifference<RoomListItem>? {
-//    var changes = [CollectionDifference<RoomListItem>.Change]()
-//
-//    switch diff {
-//    case .append(let values):
-//      for (index, value) in values.enumerated() {
-//        changes.append(.insert(offset: rooms.count + index, element: value, associatedWith: nil))
-//      }
-//    case .clear:
-//      for (index, value) in rooms.enumerated() {
-//        changes.append(.remove(offset: index, element: value, associatedWith: nil))
-//      }
-//    case .insert(let index, let value):
-//      changes.append(.insert(offset: Int(index), element: value, associatedWith: nil))
-//    case .popBack:
-//      guard let value = rooms.last else {
-//        fatalError()
-//      }
-//
-//      changes.append(.remove(offset: rooms.count - 1, element: value, associatedWith: nil))
-//    case .popFront:
-//      let summary = rooms[0]
-//      changes.append(.remove(offset: 0, element: summary, associatedWith: nil))
-//    case .pushBack(let value):
-//      changes.append(.insert(offset: rooms.count, element: value, associatedWith: nil))
-//    case .pushFront(let value):
-//      changes.append(.insert(offset: 0, element: value, associatedWith: nil))
-//    case .remove(let index):
-//
-//      changes.append(.remove(offset: Int(index), element: rooms[Int(index)], associatedWith: nil))
-//    case .reset(let values):
-//      for (index, value) in rooms.enumerated() {
-//        changes.append(.remove(offset: index, element: value, associatedWith: nil))
-//      }
-//
-//      for (index, value) in values.enumerated() {
-//        changes.append(.insert(offset: index, element: value, associatedWith: nil))
-//      }
-//    case .set(let index, let value):
-//      changes.append(.remove(offset: Int(index), element: value, associatedWith: nil))
-//      changes.append(.insert(offset: Int(index), element: value, associatedWith: nil))
-//    case .truncate(let length):
-//      for (index, value) in rooms.enumerated() {
-//        if index < length {
-//          continue
-//        }
-//
-//        changes.append(.remove(offset: index, element: value, associatedWith: nil))
-//      }
-//    }
-//
-//    return CollectionDifference(changes)
-//  }
 
   private func processDiff(_ diff: RoomListEntriesUpdate, on currentItems: [RoomSummary]) -> [RoomSummary] {
     guard let collectionDiff = buildDiff(from: diff, on: currentItems) else {
@@ -339,15 +242,12 @@ struct AppView: View {
     func login() async throws -> Client? {
         /// get uniqueish date string
         let dateStr = Date.now.description
-//        print("building client")
+
         let client = try await ClientBuilder()
             .sessionPath(path: URL.applicationSupportDirectory.path() + dateStr)
             .serverNameOrHomeserverUrl(serverNameOrUrl: "matrix.org")
             .build()
-        
-        
-        // Login through the service which creates a client.
-//        print("logging in")
+
         let username = ProcessInfo.processInfo.environment["MUSERNAME"]
         let password = ProcessInfo.processInfo.environment["MPASSWORD"]
         guard let username, let password else {
@@ -360,13 +260,9 @@ struct AppView: View {
 
   class ClientListener: ClientDelegate {
     var client: Client
-//    @Binding var rooms: [Room]
-
     init(client: Client
-//         , rooms: Binding<[Room]>
     ) {
       self.client = client
-//      self._rooms = rooms
     }
 
     func didRefreshTokens() {
@@ -374,7 +270,6 @@ struct AppView: View {
     }
 
     func didReceiveSyncUpdate() {
-      // Update the user's room list on each sync response.
 //      self.rooms = self.client.rooms()
       print("didrecievesyncupdate")
     }
@@ -386,29 +281,6 @@ struct AppView: View {
     func didUpdateRestoreToken() {
       let session = try? client.session()
       // Update the session in the keychain.
-    }
-  }
-
-  class MyRoomListLoadingStateListener: RoomListLoadingStateListener {
-    func onUpdate(state: MatrixRustSDK.RoomListLoadingState) {
-      print("update: RoomListLoadingState \(state)")
-    }
-  }  
-  class MyRoomListServiceStateListener: RoomListServiceStateListener {
-    func onUpdate(state: MatrixRustSDK.RoomListServiceState) {
-      print("update: RoomListLoadingState \(state)")
-    }
-  }
-
-  class MyRoomListEntriesListener: RoomListEntriesListener {
-    func onUpdate(roomEntriesUpdate: [MatrixRustSDK.RoomListEntriesUpdate]) {
-      print("roomEntriesUpdate: \(roomEntriesUpdate)")
-    }
-  }
-
-  class MySyncServiceStateObserver: SyncServiceStateObserver {
-    func onUpdate(state: MatrixRustSDK.SyncServiceState) {
-      print("update: SyncServiceState \(state)")
     }
   }
 
