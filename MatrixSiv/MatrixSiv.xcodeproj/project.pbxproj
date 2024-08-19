@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DA5BDA832C734FB200C47B94 /* RoomSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5BDA822C734FB200C47B94 /* RoomSummary.swift */; };
 		F101576A2C6B8ED000763A01 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10157692C6B8ED000763A01 /* HomeViewModel.swift */; };
 		F101576C2C6B907A00763A01 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F101576B2C6B907A00763A01 /* AppView.swift */; };
 		F15665AA2C65BE50002D4984 /* MatrixSivApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665A92C65BE50002D4984 /* MatrixSivApp.swift */; };
@@ -18,7 +19,7 @@
 		F15665C82C65BE51002D4984 /* MatrixSivUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665C72C65BE51002D4984 /* MatrixSivUITests.swift */; };
 		F15665CA2C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665C92C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift */; };
 		F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15ED2422C65FF6400D9EE5B /* Home.swift */; };
-		F15ED24A2C660D6700D9EE5B /* MatrixRustSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F15ED2492C660D6700D9EE5B /* MatrixRustSDK */; };
+		F1B5F1B62C6C7CCD006F093A /* MatrixRustSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F1B5F1B52C6C7CCD006F093A /* MatrixRustSDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DA5BDA822C734FB200C47B94 /* RoomSummary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomSummary.swift; sourceTree = "<group>"; };
 		F10157692C6B8ED000763A01 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		F101576B2C6B907A00763A01 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		F15665A62C65BE50002D4984 /* MatrixSiv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatrixSiv.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -61,7 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F15ED24A2C660D6700D9EE5B /* MatrixRustSDK in Frameworks */,
+				F1B5F1B62C6C7CCD006F093A /* MatrixRustSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +84,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DA5BDA812C734F8200C47B94 /* Element */ = {
+			isa = PBXGroup;
+			children = (
+				DA5BDA822C734FB200C47B94 /* RoomSummary.swift */,
+			);
+			path = Element;
+			sourceTree = "<group>";
+		};
 		F156659D2C65BE50002D4984 = {
 			isa = PBXGroup;
 			children = (
@@ -105,6 +115,7 @@
 		F15665A82C65BE50002D4984 /* MatrixSiv */ = {
 			isa = PBXGroup;
 			children = (
+				DA5BDA812C734F8200C47B94 /* Element */,
 				F15665A92C65BE50002D4984 /* MatrixSivApp.swift */,
 				F15ED2422C65FF6400D9EE5B /* Home.swift */,
 				F101576B2C6B907A00763A01 /* AppView.swift */,
@@ -160,7 +171,7 @@
 			);
 			name = MatrixSiv;
 			packageProductDependencies = (
-				F15ED2492C660D6700D9EE5B /* MatrixRustSDK */,
+				F1B5F1B52C6C7CCD006F093A /* MatrixRustSDK */,
 			);
 			productName = MatrixSiv;
 			productReference = F15665A62C65BE50002D4984 /* MatrixSiv.app */;
@@ -235,7 +246,7 @@
 			);
 			mainGroup = F156659D2C65BE50002D4984;
 			packageReferences = (
-				F15ED2482C660D6700D9EE5B /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */,
+				F1B5F1B42C6C7CCD006F093A /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */,
 			);
 			productRefGroup = F15665A72C65BE50002D4984 /* Products */;
 			projectDirPath = "";
@@ -282,6 +293,7 @@
 				F15665AC2C65BE50002D4984 /* ContentView.swift in Sources */,
 				F15665AE2C65BE50002D4984 /* Item.swift in Sources */,
 				F101576C2C6B907A00763A01 /* AppView.swift in Sources */,
+				DA5BDA832C734FB200C47B94 /* RoomSummary.swift in Sources */,
 				F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */,
 				F101576A2C6B8ED000763A01 /* HomeViewModel.swift in Sources */,
 				F15665AA2C65BE50002D4984 /* MatrixSivApp.swift in Sources */,
@@ -444,10 +456,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MatrixSiv/Preview Content\"";
-				DEVELOPMENT_TEAM = 7R8AN2MZA4;
+				DEVELOPMENT_TEAM = UKX3W26K7W;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = SivTest;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -463,11 +476,12 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.slerpy.MatrixSiv;
+				PRODUCT_BUNDLE_IDENTIFIER = com.crowtocracy.SivTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -482,10 +496,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MatrixSiv/Preview Content\"";
-				DEVELOPMENT_TEAM = 7R8AN2MZA4;
+				DEVELOPMENT_TEAM = UKX3W26K7W;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = SivTest;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -501,11 +516,12 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.slerpy.MatrixSiv;
+				PRODUCT_BUNDLE_IDENTIFIER = com.crowtocracy.SivTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -643,20 +659,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		F15ED2482C660D6700D9EE5B /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */ = {
+		F1B5F1B42C6C7CCD006F093A /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/element-hq/matrix-rust-components-swift";
+			repositoryURL = "https://github.com/matrix-org/matrix-rust-components-swift/";
 			requirement = {
-				kind = exactVersion;
-				version = 1.0.11;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		F15ED2492C660D6700D9EE5B /* MatrixRustSDK */ = {
+		F1B5F1B52C6C7CCD006F093A /* MatrixRustSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F15ED2482C660D6700D9EE5B /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */;
+			package = F1B5F1B42C6C7CCD006F093A /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */;
 			productName = MatrixRustSDK;
 		};
 /* End XCSwiftPackageProductDependency section */
