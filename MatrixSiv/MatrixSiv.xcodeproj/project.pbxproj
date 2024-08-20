@@ -10,6 +10,8 @@
 		DA5BDA832C734FB200C47B94 /* RoomSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5BDA822C734FB200C47B94 /* RoomSummary.swift */; };
 		F101576A2C6B8ED000763A01 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10157692C6B8ED000763A01 /* HomeViewModel.swift */; };
 		F101576C2C6B907A00763A01 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F101576B2C6B907A00763A01 /* AppView.swift */; };
+		F11B29F72C74403B0099C758 /* RoomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11B29F62C74403B0099C758 /* RoomCell.swift */; };
+		F11B29F92C744B320099C758 /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11B29F82C744B320099C758 /* RoomView.swift */; };
 		F15665AA2C65BE50002D4984 /* MatrixSivApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665A92C65BE50002D4984 /* MatrixSivApp.swift */; };
 		F15665AC2C65BE50002D4984 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665AB2C65BE50002D4984 /* ContentView.swift */; };
 		F15665AE2C65BE50002D4984 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665AD2C65BE50002D4984 /* Item.swift */; };
@@ -43,6 +45,8 @@
 		DA5BDA822C734FB200C47B94 /* RoomSummary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomSummary.swift; sourceTree = "<group>"; };
 		F10157692C6B8ED000763A01 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		F101576B2C6B907A00763A01 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
+		F11B29F62C74403B0099C758 /* RoomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomCell.swift; sourceTree = "<group>"; };
+		F11B29F82C744B320099C758 /* RoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 		F15665A62C65BE50002D4984 /* MatrixSiv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatrixSiv.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F15665A92C65BE50002D4984 /* MatrixSivApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixSivApp.swift; sourceTree = "<group>"; };
 		F15665AB2C65BE50002D4984 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -118,6 +122,8 @@
 				DA5BDA812C734F8200C47B94 /* Element */,
 				F15665A92C65BE50002D4984 /* MatrixSivApp.swift */,
 				F15ED2422C65FF6400D9EE5B /* Home.swift */,
+				F11B29F62C74403B0099C758 /* RoomCell.swift */,
+				F11B29F82C744B320099C758 /* RoomView.swift */,
 				F101576B2C6B907A00763A01 /* AppView.swift */,
 				F10157692C6B8ED000763A01 /* HomeViewModel.swift */,
 				F15665AB2C65BE50002D4984 /* ContentView.swift */,
@@ -290,12 +296,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F11B29F92C744B320099C758 /* RoomView.swift in Sources */,
 				F15665AC2C65BE50002D4984 /* ContentView.swift in Sources */,
 				F15665AE2C65BE50002D4984 /* Item.swift in Sources */,
 				F101576C2C6B907A00763A01 /* AppView.swift in Sources */,
 				DA5BDA832C734FB200C47B94 /* RoomSummary.swift in Sources */,
 				F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */,
 				F101576A2C6B8ED000763A01 /* HomeViewModel.swift in Sources */,
+				F11B29F72C74403B0099C758 /* RoomCell.swift in Sources */,
 				F15665AA2C65BE50002D4984 /* MatrixSivApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

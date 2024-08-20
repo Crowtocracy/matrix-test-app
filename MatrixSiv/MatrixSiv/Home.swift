@@ -14,12 +14,23 @@ struct Home: View {
     @Binding var rooms: [RoomSummary]
 
     var body: some View {
-        VStack {
-            Text("Hello, \(clientName == nil ? "World" : clientName ?? "")!" )
-          Text("room count: \(rooms.count)")
-            roomListView
-                .frame(maxWidth: .infinity)
+        NavigationStack {
+            VStack {
+                Text("Hello, \(clientName == nil ? "World" : clientName ?? "")!" )
+              Text("room count: \(rooms.count)")
+                roomListView
+                    .frame(maxWidth: .infinity)
+            }
         }
+        .task {
+            do {
+                clientName = try await client?.displayName()
+            } catch {
+                print("ERROR: can't get client name \(error)")
+            }
+            
+        }
+        
         
         
     }
@@ -29,10 +40,12 @@ struct Home: View {
         ScrollView {
             VStack {
                 ForEach(rooms, id: \.id) { room in
-                    HStack {
-                        Image(systemName: "shared.with.you.circle")
-                      Text(room.name)
+                    NavigationLink {
+                        RoomView(roomSummary: room)
+                    } label: {
+                        RoomCell(roomSummary: room)
                     }
+
               }
                 Spacer()
             }
