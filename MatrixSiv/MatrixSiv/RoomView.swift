@@ -19,6 +19,7 @@ struct RoomView: View {
         VStack {
             header
             messages
+            footer
         }
         .task {
             print("Room task")
@@ -32,7 +33,12 @@ struct RoomView: View {
                 print("ERROR: timeline failed to init \(error)")
             }
             print(roomSummary.roomListItem.isTimelineInitialized())
-            
+            do {
+                
+                timeline = try await roomSummary.roomListItem.fullRoom().timeline()
+            } catch {
+                print("ERROR: cannot find timeline \(error)")
+            }
             timelineListenerTaskHandle = try? await roomSummary.roomListItem.fullRoom().timeline().addListener(listener: timelineListenerProxy!)
         }
     }
@@ -61,6 +67,9 @@ struct RoomView: View {
             
             Button {
                 print("sending message")
+                Task {
+                    await sendMessage()
+                }
             } label: {
                 Image(systemName: "paperplane")
                     .size(20)
@@ -70,6 +79,21 @@ struct RoomView: View {
         .padding(.vertical, 10)
     }
     
+    private func sendMessage() async {
+        guard !message.isEmpty else {
+            print("empty message")
+            return
+        }
+        let message = messageEventContentFromMarkdown(md: message)
+        do {
+            let _ = try await timeline?.send(msg: message)
+            print("message sent")
+            self.message = ""
+        } catch {
+            print("ERROR: Message not sent \(error)")
+        }
+        
+    }
     private func updateItemsWithDiffs(_ diffs: [TimelineDiff]) {
         
         let items = diffs
