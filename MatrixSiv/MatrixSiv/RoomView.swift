@@ -29,7 +29,26 @@ struct RoomView: View {
             
             print(roomSummary.roomListItem.isTimelineInitialized())
             do {
-                try await roomSummary.roomListItem.initTimeline(eventTypeFilter: nil, internalIdPrefix: nil)
+                
+                let stateEventFilters: [StateEventType] = [.roomAliases,
+                                                           .roomCanonicalAlias,
+                                                           .roomGuestAccess,
+                                                           .roomHistoryVisibility,
+                                                           .roomJoinRules,
+                                                           .roomPinnedEvents,
+                                                           .roomPowerLevels,
+                                                           .roomServerAcl,
+                                                           .roomTombstone,
+                                                           .spaceChild,
+                                                           .spaceParent,
+                                                           .policyRuleRoom,
+                                                           .policyRuleServer,
+                                                           .policyRuleUser,
+                                                           .roomCreate,
+                                                           .roomMemberEvent,
+                                                           .roomName
+                ]
+                try await roomSummary.roomListItem.initTimeline(eventTypeFilter: TimelineEventTypeFilter.exclude(eventTypes: stateEventFilters.map({ FilterTimelineEventType.state(eventType: $0) })), internalIdPrefix: nil)
             } catch {
                 print("ERROR: timeline failed to init \(error)")
             }
