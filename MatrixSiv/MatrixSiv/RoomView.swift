@@ -93,9 +93,26 @@ struct RoomView: View {
             LazyVStack {
                 ForEach(timelineItems) { item in
                     TimelineItemCell(timelineItem: item)
+                        .task {
+                            if item.id == timelineItems.last?.id && roomSummary.hasUnreadMessages {
+                                try? await Task.sleep(for: .seconds(10))
+                                await markAsRead()
+                            }
+                        }
                 }
             }
         }
+    }
+    
+    func markAsRead() async {
+        print(":marking as read")
+        do {
+            try await timeline?.markAsRead(receiptType: .read)
+            print("marked as read")
+        } catch {
+            print("ERROR: cannot mark as read \(error)")
+        }
+        
     }
     
     @ViewBuilder var footer: some View {
@@ -221,9 +238,25 @@ struct RoomView: View {
 
 struct TimelineItemCell: View {
     var timelineItem: TimelineItem
+    @State var senderName = String()
     var body: some View {
         if let event = timelineItem.asEvent() {
-            Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
+            HStack {
+                Text(senderName).bold()
+                
+                Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
+            }
+            .task {
+                switch event.senderProfile() {
+                case .ready(let displayName, let displayNameAmbiguous, let avatarUrl):
+                    senderName = displayName ?? ""
+                case .error(let message):
+                    print(message)
+                default:
+                    senderName = "Unknown"
+                }
+            }
+            
         } else if let virtual = timelineItem.asVirtual() {
             switch virtual {
             case .dayDivider(let ts):
