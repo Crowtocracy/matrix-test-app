@@ -26,20 +26,40 @@ struct RoomView: View {
             timelineListenerProxy = TimelineListenerProxy({ diff in
                 self.updateItemsWithDiffs(diff)
             })
+            
             print(roomSummary.roomListItem.isTimelineInitialized())
             do {
                 try await roomSummary.roomListItem.initTimeline(eventTypeFilter: nil, internalIdPrefix: nil)
             } catch {
                 print("ERROR: timeline failed to init \(error)")
             }
+            if roomSummary.isInvite {
+                await joinRoom()
+            }
             print(roomSummary.roomListItem.isTimelineInitialized())
             do {
-                
                 timeline = try await roomSummary.roomListItem.fullRoom().timeline()
+                
             } catch {
                 print("ERROR: cannot find timeline \(error)")
             }
+            await loadOlderMessages()
             timelineListenerTaskHandle = try? await roomSummary.roomListItem.fullRoom().timeline().addListener(listener: timelineListenerProxy!)
+            
+        }
+    }
+    func joinRoom() async {
+        do {
+            try await roomSummary.roomListItem.fullRoom().join()
+        } catch {
+            print("ERROR: unable to join room \(error)")
+        }
+    }
+    func loadOlderMessages() async {
+        do {
+            print(try await timeline?.paginateBackwards(numEvents: 10))
+        } catch {
+            print("ERROR: cannot load older messages \(error)")
         }
     }
     @ViewBuilder var header: some View {
@@ -184,7 +204,7 @@ struct TimelineItemCell: View {
     var timelineItem: TimelineItem
     var body: some View {
         if let event = timelineItem.asEvent() {
-            Text(event.content().asMessage()?.body() ?? "no message body")
+            Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
         } else if let virtual = timelineItem.asVirtual() {
             switch virtual {
             case .dayDivider(let ts):

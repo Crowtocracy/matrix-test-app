@@ -24,6 +24,7 @@ struct Home: View {
         }
         .task {
             do {
+                print("client id: \(try client?.userId())")
                 clientName = try await client?.displayName()
             } catch {
                 print("ERROR: can't get client name \(error)")
