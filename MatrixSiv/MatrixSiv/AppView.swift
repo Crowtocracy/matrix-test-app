@@ -247,14 +247,33 @@ struct AppView: View {
             .sessionPath(path: URL.applicationSupportDirectory.path() + dateStr)
             .serverNameOrHomeserverUrl(serverNameOrUrl: "matrix.org")
             .build()
-
-        let username = ProcessInfo.processInfo.environment["MUSERNAME"]
-        let password = ProcessInfo.processInfo.environment["MPASSWORD"]
-        guard let username, let password else {
-            fatalError("Username or password is not set in the env variables")
+        
+        if let session = Session.getFromUserDefaults() {
+            do {
+                print("restore session")
+                try await client.restoreSession(session: session)
+                print("session restored")
+            } catch {
+                print("ERROR: unable to restore session")
+                try await freshLogin()
+            }
+            
+        } else {
+            try await freshLogin()
         }
-        try await client.login(username: username, password: password, initialDeviceName: nil, deviceId: nil)
-
+        func freshLogin() async throws {
+            print("logging in user")
+            let username = ProcessInfo.processInfo.environment["MUSERNAME"]
+            let password = ProcessInfo.processInfo.environment["MPASSWORD"]
+            guard let username, let password else {
+                fatalError("Username or password is not set in the env variables")
+            }
+            try await client.login(username: username, password: password, initialDeviceName: nil, deviceId: nil)
+            let session = try client.session()
+            session.setToUserDefaults()
+            
+        }
+        
         return client
     }	
 
@@ -280,6 +299,7 @@ struct AppView: View {
 
     func didUpdateRestoreToken() {
       let session = try? client.session()
+        session?.setToUserDefaults()
       // Update the session in the keychain.
     }
   }
@@ -344,6 +364,61 @@ struct AppView: View {
     }
   }
 
+}
+
+extension Session: Codable {
+    enum CodingKeys: CodingKey {
+        case accessToken, refreshToken, userId, deviceId, homeserverUrl, oidcData, slidingSyncProxy
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(accessToken, forKey: .accessToken)
+        try container.encode(refreshToken, forKey: .refreshToken)
+        try container.encode(userId, forKey: .userId)
+        try container.encode(deviceId, forKey: .deviceId)
+        try container.encode(homeserverUrl, forKey: .homeserverUrl)
+        try container.encode(oidcData, forKey: .oidcData)
+        try container.encode(slidingSyncProxy, forKey: .slidingSyncProxy)
+    }
+    
+    public func setToUserDefaults() {
+        do {
+            let encoded = try JSONEncoder().encode(self)
+            UserDefaults.standard.setValue(encoded, forKey: "session")
+        } catch {
+            print("ERROR: unable to encode to UserDefaults \(error)")
+        }
+    }
+    static public func getFromUserDefaults() -> Session?  {
+        do {
+            if let data = UserDefaults.standard.data(forKey: "session") {
+                print(data)
+                let session = try JSONDecoder().decode(Session.self, from: data)
+                return self.init(accessToken: session.accessToken, refreshToken: session.refreshToken, userId: session.userId, deviceId: session.deviceId, homeserverUrl: session.homeserverUrl, oidcData: session.oidcData, slidingSyncProxy: session.slidingSyncProxy)
+            }
+        } catch {
+            print("ERROR: unable to get from UserDefaults")
+        }
+        return nil
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let accessToken = try container.decode(String.self, forKey: CodingKeys.accessToken)
+        let refreshToken = try? container.decode(String.self, forKey: .refreshToken)
+        let userId = try container.decode(String.self, forKey: .userId)
+        let deviceId = try container.decode(String.self, forKey: .deviceId)
+        let homeserverUrl = try container.decode(String.self, forKey: .homeserverUrl)
+        let oidcData = try? container.decode(String.self, forKey: .oidcData)
+        let slidingSyncProxy = try? container.decode(String.self, forKey: .slidingSyncProxy)
+        self.init(accessToken: accessToken, refreshToken: refreshToken, userId: userId, deviceId: deviceId, homeserverUrl: homeserverUrl, oidcData: oidcData, slidingSyncProxy: slidingSyncProxy)
+    }
+    
+    
+}
+
+enum SivErrors: Error{
+    case SessionError
 }
 
 //#Preview {
