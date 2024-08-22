@@ -40,11 +40,11 @@ struct Home: View {
     var roomListView: some View {
         ScrollView {
             VStack {
-                ForEach(rooms, id: \.id) { room in
+                ForEach($rooms, id: \.id) { room in
                     NavigationLink {
                         RoomView(roomSummary: room)
                     } label: {
-                        RoomCell(roomSummary: room)
+                        RoomCell(roomSummary: room.wrappedValue)
                     }
 
               }

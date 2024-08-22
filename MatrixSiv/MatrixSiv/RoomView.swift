@@ -9,7 +9,7 @@ import SwiftUI
 import MatrixRustSDK
 
 struct RoomView: View {
-    var roomSummary: RoomSummary
+    @Binding var roomSummary: RoomSummary
     @State var message = String()
     @State var timelineItems = [TimelineItem]()
     @State var timelineListenerProxy: TimelineListenerProxy?
@@ -85,6 +85,9 @@ struct RoomView: View {
         HStack {
             Avatar(avatarURL: roomSummary.avatarURL)
             Text(roomSummary.name)
+            Circle()
+                .fill(roomSummary.hasUnreadMessages ? .green : .clear)
+                .size(15)
         }
     }
     
@@ -95,8 +98,12 @@ struct RoomView: View {
                     TimelineItemCell(timelineItem: item)
                         .task {
                             if item.id == timelineItems.last?.id && roomSummary.hasUnreadMessages {
-                                try? await Task.sleep(for: .seconds(10))
-                                await markAsRead()
+//                                try? await Task.sleep(for: .seconds(10))
+                                if let eventId = item.asEvent()?.eventId() {
+                                    await markAsRead(eventID: eventId)
+                                }
+                                
+                               
                             }
                         }
                 }
@@ -104,10 +111,14 @@ struct RoomView: View {
         }
     }
     
-    func markAsRead() async {
+    func markAsRead(eventID: String) async {
         print(":marking as read")
         do {
-            try await timeline?.markAsRead(receiptType: .read)
+            guard let timeline else {
+                fatalError("no timeline")
+            }
+            try await timeline.sendReadReceipt(receiptType: .read, eventId: eventID)
+            try await roomSummary.roomListItem.fullRoom().markAsRead(receiptType: .read)
             print("marked as read")
         } catch {
             print("ERROR: cannot mark as read \(error)")
@@ -286,5 +297,5 @@ extension TimelineItem: Identifiable {
 }
 
 #Preview {
-    RoomView(roomSummary: RoomSummary(roomListItem: RoomListItem(noPointer: .init()), id: UUID().uuidString, hasUnreadMessages: false, hasUnreadMentions: false, hasUnreadNotifications: false))
+    RoomView(roomSummary: .constant(RoomSummary(roomListItem: RoomListItem(noPointer: .init()), id: UUID().uuidString, hasUnreadMessages: false, hasUnreadMentions: false, hasUnreadNotifications: false)))
 }

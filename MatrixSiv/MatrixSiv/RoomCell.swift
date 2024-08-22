@@ -25,6 +25,7 @@ struct RoomCell: View {
             .frame(maxWidth: .infinity)
             .task {
                 lastMessage = roomSummary.lastMessage?.description
+                
             }
             Spacer()
             if roomSummary.hasUnreadMessages {

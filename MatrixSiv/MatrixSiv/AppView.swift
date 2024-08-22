@@ -20,9 +20,21 @@ struct AppView: View {
     @State var delegateHandle: TaskHandle?
     @State var stateUpdatesTaskHandle: TaskHandle?
     @State var sendQueueListenerTaskHandle: TaskHandle?
+    @State var roomListService: RoomListService?
+    @State var syncService: SyncService?
 
   @State var cancellables = Set<AnyCancellable>()
     var body: some View {
+        Text("Hello?")
+        Button("Try refresh?") {
+            Task {
+                _ = try? await roomListService?.allRooms().entriesWithDynamicAdapters(pageSize: UInt32(200), listener: RoomListEntriesListenerProxy { updates in
+                  diffsPublisher.send(updates)
+    //                            updateRoomsWithDiffs(updates)
+                })
+            }
+            
+        }
         if let client {
           Home(client: client, rooms: $rooms)
         } else {
@@ -38,10 +50,18 @@ struct AppView: View {
 
                         delegateHandle = client.setDelegate(delegate: ClientDelegateWrapper { isSoftLogout in
                         })
-                        let syncService = try await client.syncService().finish()
+                        syncService = try await client.syncService().finish()
+                          guard let syncService else {
+                              print("no syncservice")
+                              return
+                          }
                         await syncService.start()
 
-                        let roomListService = syncService.roomListService()
+                        roomListService = syncService.roomListService()
+                          guard let roomListService else {
+                              print("no roomListService")
+                              return
+                          }
 
                         let roomList = try await roomListService.allRooms()
 
@@ -68,6 +88,7 @@ struct AppView: View {
 
                         let listUpdatesSubscriptionResult = roomList.entriesWithDynamicAdapters(pageSize: UInt32(200), listener: RoomListEntriesListenerProxy { updates in
                           diffsPublisher.send(updates)
+//                            updateRoomsWithDiffs(updates)
                         })
 
                           let stateUpdatesSubscriptionResult = try roomList.loadingState(listener: RoomListStateObserver { state in
