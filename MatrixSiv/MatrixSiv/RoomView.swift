@@ -95,7 +95,7 @@ struct RoomView: View {
         ScrollView {
             LazyVStack {
                 ForEach(timelineItems) { item in
-                    TimelineItemCell(timelineItem: item)
+                    TimelineItemCell(timelineItem: item, addReaction: sendReaction)
                         .task {
                             if item.id == timelineItems.last?.id && roomSummary.hasUnreadMessages {
 //                                try? await Task.sleep(for: .seconds(10))
@@ -109,6 +109,10 @@ struct RoomView: View {
                 }
             }
         }
+    }
+    
+    func sendReaction(eventID: String, reaction: String) async throws {
+        try await timeline?.toggleReaction(eventId: eventID, key: reaction)
     }
     
     func markAsRead(eventID: String) async {
@@ -135,7 +139,8 @@ struct RoomView: View {
             Button {
                 print("sending message")
                 Task {
-                    await sendMessage()
+//                    await sendMessage()
+                    await sendObjectMessage()
                 }
             } label: {
                 Image(systemName: "paperplane")
@@ -154,6 +159,28 @@ struct RoomView: View {
         let message = messageEventContentFromMarkdown(md: message)
         do {
             let _ = try await timeline?.send(msg: message)
+            print("message sent")
+            self.message = ""
+        } catch {
+            print("ERROR: Message not sent \(error)")
+        }
+        
+    }
+    
+    private func sendObjectMessage() async {
+        guard !message.isEmpty else {
+            print("empty message")
+            return
+        }
+        let messageObject = MessageContent(sivElementUUID: UUID().uuidString, message: self.message, url: "https://www.trysiv.com/shares/detail/1b48398c-b16e-4e2c-ba9c-cac5932bc19c/981e9148-2af1-4b67-a5f0-e58777795d1e")
+        do {
+            let json = try JSONEncoder().encode(messageObject)
+            guard let htmlString = String(data: json, encoding: String.Encoding.utf8) else {
+                print("ERROR: can't convert json to html")
+                return
+            }
+            let messageHTML = messageEventContentFromHtml(body: message, htmlBody: htmlString)
+            let _ = try await timeline?.send(msg: messageHTML)
             print("message sent")
             self.message = ""
         } catch {
@@ -250,12 +277,21 @@ struct RoomView: View {
 struct TimelineItemCell: View {
     var timelineItem: TimelineItem
     @State var senderName = String()
+    @State var messageContent: MessageContent?
+    @State var reactions: [Reaction] = []
+    let addReaction: (_ eventID: String, _ reaction: String) async throws -> Void
     var body: some View {
         if let event = timelineItem.asEvent() {
-            HStack {
+            HStack(alignment: .top) {
                 Text(senderName).bold()
-                
-                Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
+                VStack {
+                    Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
+                    if let messageContent {
+                        Text("This message has additional data")
+                        Text("\(messageContent)")
+                    }
+                    reactionsView
+                }
             }
             .task {
                 switch event.senderProfile() {
@@ -266,6 +302,20 @@ struct TimelineItemCell: View {
                 default:
                     senderName = "Unknown"
                 }
+                switch event.content().asMessage()?.msgtype() {
+                case .text(let content):
+                    if let html = content.formatted?.body {
+                        do {
+                            messageContent = try MessageContent.messageFromString(html)
+                        } catch {
+                            print("ERROR: Cannot parse html to MessageContent \(error)")
+                        }
+                    }
+                default:
+                    print("message type not supported")
+                }
+                reactions = event.reactions()
+                
             }
             
         } else if let virtual = timelineItem.asVirtual() {
@@ -275,6 +325,51 @@ struct TimelineItemCell: View {
             case .readMarker:
                 Text("read")
             }
+        }
+    }
+    
+    @ViewBuilder
+    var reactionsView: some View {
+        HStack {
+            ForEach(reactions, id: \.key) { reaction in
+                HStack {
+                    Text("\(reaction.key) \(reaction.count)")
+                }
+                .padding(4)
+                .background(
+                    Capsule().fill(.white).stroke(.gray, lineWidth: 1)
+                )
+                
+            }
+            Button {
+                print("send a reaction")
+                guard let eventID = timelineItem.asEvent()?.eventId() else {
+                    print("no eventID")
+                    return
+                }
+                Task {
+                    do {
+                        try await addReaction(eventID, "🌱")
+                    } catch {
+                        print("Error: cannot send reaction \(error)")
+                    }
+                    
+                }
+            } label: {
+                Image(systemName: "face.smiling")
+                    .resizable()
+                    .scaledToFit()
+                    .size(20)
+                    .overlay {
+                        Image(systemName: "plus")
+                            .resizable()
+                            .scaledToFit()
+                            .size(8)
+                            .offset(x: 8, y: -10)
+                        
+                    }
+            }
+            Spacer()
         }
     }
 }
@@ -293,6 +388,17 @@ class TimelineListenerProxy: TimelineListener {
 extension TimelineItem: Identifiable {
     public var id: String {
         self.uniqueId()
+    }
+}
+
+struct MessageContent: Codable {
+    let sivElementUUID: String
+    let message: String
+    let url: String
+    
+    static func messageFromString(_ str: String) throws -> MessageContent? {
+        let messageContent = try JSONDecoder().decode(MessageContent.self, from: str.data(using: .utf8)!)
+        return messageContent
     }
 }
 
