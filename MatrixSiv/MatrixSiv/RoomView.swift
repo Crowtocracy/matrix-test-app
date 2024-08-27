@@ -27,31 +27,11 @@ struct RoomView: View {
                 self.updateItemsWithDiffs(diff)
             })
             
-            print(roomSummary.roomListItem.isTimelineInitialized())
-            do {
-                
-                let stateEventFilters: [StateEventType] = [.roomAliases,
-                                                           .roomCanonicalAlias,
-                                                           .roomGuestAccess,
-                                                           .roomHistoryVisibility,
-                                                           .roomJoinRules,
-                                                           .roomPinnedEvents,
-                                                           .roomPowerLevels,
-                                                           .roomServerAcl,
-                                                           .roomTombstone,
-                                                           .spaceChild,
-                                                           .spaceParent,
-                                                           .policyRuleRoom,
-                                                           .policyRuleServer,
-                                                           .policyRuleUser,
-                                                           .roomCreate,
-                                                           .roomMemberEvent,
-                                                           .roomName
-                ]
-                try await roomSummary.roomListItem.initTimeline(eventTypeFilter: TimelineEventTypeFilter.exclude(eventTypes: stateEventFilters.map({ FilterTimelineEventType.state(eventType: $0) })), internalIdPrefix: nil)
-            } catch {
-                print("ERROR: timeline failed to init \(error)")
+            
+            if !roomSummary.roomListItem.isTimelineInitialized() {
+                await initializeTimeline()
             }
+            
             if roomSummary.isInvite {
                 await joinRoom()
             }
@@ -62,9 +42,34 @@ struct RoomView: View {
             } catch {
                 print("ERROR: cannot find timeline \(error)")
             }
-            await loadOlderMessages()
             timelineListenerTaskHandle = try? await roomSummary.roomListItem.fullRoom().timeline().addListener(listener: timelineListenerProxy!)
             
+        }
+    }
+    func initializeTimeline() async {
+        do {
+            
+            let stateEventFilters: [StateEventType] = [.roomAliases,
+                                                       .roomCanonicalAlias,
+                                                       .roomGuestAccess,
+                                                       .roomHistoryVisibility,
+                                                       .roomJoinRules,
+                                                       .roomPinnedEvents,
+                                                       .roomPowerLevels,
+                                                       .roomServerAcl,
+                                                       .roomTombstone,
+                                                       .spaceChild,
+                                                       .spaceParent,
+                                                       .policyRuleRoom,
+                                                       .policyRuleServer,
+                                                       .policyRuleUser,
+                                                       .roomCreate,
+                                                       .roomMemberEvent,
+                                                       .roomName
+            ]
+            try await roomSummary.roomListItem.initTimeline(eventTypeFilter: TimelineEventTypeFilter.exclude(eventTypes: stateEventFilters.map({ FilterTimelineEventType.state(eventType: $0) })), internalIdPrefix: nil)
+        } catch {
+            print("ERROR: timeline failed to init \(error)")
         }
     }
     func joinRoom() async {
@@ -76,7 +81,8 @@ struct RoomView: View {
     }
     func loadOlderMessages() async {
         do {
-            print(try await timeline?.paginateBackwards(numEvents: 10))
+            let _ = try await timeline?.paginateBackwards(numEvents: 10)
+//            print(try await timeline?.paginateBackwards(numEvents: 10))
         } catch {
             print("ERROR: cannot load older messages \(error)")
         }
@@ -94,6 +100,16 @@ struct RoomView: View {
     @ViewBuilder var messages: some View {
         ScrollView {
             LazyVStack {
+                Button {
+                    Task {
+                        await loadOlderMessages()
+                    }
+                } label: {
+                    Text("Load older messages")
+                }
+                .padding(10)
+                .background(.gray)
+                .clipShape(Capsule())
                 ForEach(timelineItems) { item in
                     TimelineItemCell(timelineItem: item, addReaction: sendReaction)
                         .task {
@@ -279,10 +295,12 @@ struct TimelineItemCell: View {
     @State var senderName = String()
     @State var messageContent: MessageContent?
     @State var reactions: [Reaction] = []
+    @State var toogleToReload = false
     let addReaction: (_ eventID: String, _ reaction: String) async throws -> Void
     var body: some View {
         if let event = timelineItem.asEvent() {
             HStack(alignment: .top) {
+                Text(toogleToReload.description)
                 Text(senderName).bold()
                 VStack {
                     Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
@@ -298,7 +316,7 @@ struct TimelineItemCell: View {
                 case .ready(let displayName, let displayNameAmbiguous, let avatarUrl):
                     senderName = displayName ?? ""
                 case .error(let message):
-                    print(message)
+                    print("ERROR: unable to load sender profile: \(message)")
                 default:
                     senderName = "Unknown"
                 }
@@ -314,7 +332,7 @@ struct TimelineItemCell: View {
                 default:
                     print("message type not supported")
                 }
-                reactions = event.reactions()
+                reactions = timelineItem.asEvent()?.reactions() ?? []
                 
             }
             
@@ -331,7 +349,7 @@ struct TimelineItemCell: View {
     @ViewBuilder
     var reactionsView: some View {
         HStack {
-            ForEach(reactions, id: \.key) { reaction in
+            ForEach(timelineItem.asEvent()?.reactions() ?? [], id: \.key) { reaction in
                 HStack {
                     Text("\(reaction.key) \(reaction.count)")
                 }
@@ -350,6 +368,9 @@ struct TimelineItemCell: View {
                 Task {
                     do {
                         try await addReaction(eventID, "🌱")
+                        print("reaction sent")
+                        reactions = timelineItem.asEvent()?.reactions() ?? []
+                        toogleToReload.toggle()
                     } catch {
                         print("Error: cannot send reaction \(error)")
                     }

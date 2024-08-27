@@ -24,7 +24,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "F808F80A-AD66-438A-A29D-A3010EF23F24"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "MatrixSiv/RoomCell.swift"
@@ -40,7 +40,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "5A4E90B4-7A40-419F-B224-F8ED9058C1CE"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "MatrixSiv/RoomCell.swift"
@@ -62,8 +62,8 @@
             filePath = "MatrixSiv/RoomView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "209"
-            endingLineNumber = "209"
+            startingLineNumber = "225"
+            endingLineNumber = "225"
             landmarkName = "updateItemsWithDiffs(_:)"
             landmarkType = "7">
          </BreakpointContent>
