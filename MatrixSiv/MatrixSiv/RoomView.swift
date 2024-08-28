@@ -15,6 +15,7 @@ struct RoomView: View {
     @State var timelineListenerProxy: TimelineListenerProxy?
     @State var timelineListenerTaskHandle: TaskHandle?
     @State var timeline: Timeline?
+    @State var parentMessage: TimelineItem?
     var body: some View {
         VStack {
             header
@@ -111,9 +112,12 @@ struct RoomView: View {
                 .background(.gray)
                 .clipShape(Capsule())
                 ForEach(timelineItems) { item in
-                    TimelineItemCell(timelineItem: item, addReaction: sendReaction)
+                    TimelineItemCell(timelineItem: item, timeline: $timeline, addReaction: toggleReaction)
+                        .onLongPressGesture(perform: {
+                            setReplyMessage(message: item)
+                        })
                         .task {
-                            if item.id == timelineItems.last?.id && roomSummary.hasUnreadMessages {
+                            if roomSummary.hasUnreadMessages {
 //                                try? await Task.sleep(for: .seconds(10))
                                 if let eventId = item.asEvent()?.eventId() {
                                     await markAsRead(eventID: eventId)
@@ -127,7 +131,15 @@ struct RoomView: View {
         }
     }
     
-    func sendReaction(eventID: String, reaction: String) async throws {
+    func setReplyMessage(message: TimelineItem) {
+        guard let _ = message.asEvent()?.content().asMessage()?.body() else {
+            print("Invalid parent message")
+            return
+        }
+        parentMessage = message
+    }
+    
+    func toggleReaction(eventID: String, reaction: String) async throws {
         try await timeline?.toggleReaction(eventId: eventID, key: reaction)
     }
     
@@ -147,25 +159,45 @@ struct RoomView: View {
     }
     
     @ViewBuilder var footer: some View {
-        HStack(spacing: 20) {
-            TextField(text: $message) {
-                Text("Message")
+        VStack {
+            if let parent = parentMessage?.asEvent()?.content().asMessage()?.body() {
+                HStack {
+                    Text("Replying to: \(parent)")
+                    Spacer()
+                    Button {
+                        parentMessage = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .size(20)
+                    }
+                }
+                
             }
             
-            Button {
-                print("sending message")
-                Task {
-//                    await sendMessage()
-                    await sendObjectMessage()
+            HStack(spacing: 20) {
+                TextField(text: $message) {
+                    Text("Message")
                 }
-            } label: {
-                Image(systemName: "paperplane")
-                    .size(20)
+                
+                Button {
+                    print("sending message")
+                    Task {
+                        await sendMessage()
+                        // await sendObjectMessage()
+                    }
+                } label: {
+                    Image(systemName: "paperplane")
+                        .size(20)
+                }
             }
         }
+        
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
     }
+    
     
     private func sendMessage() async {
         guard !message.isEmpty else {
@@ -174,7 +206,12 @@ struct RoomView: View {
         }
         let message = messageEventContentFromMarkdown(md: message)
         do {
-            let _ = try await timeline?.send(msg: message)
+            if let eventID = parentMessage?.asEvent()?.eventId() {
+                let _ = try await timeline?.sendReply(msg: message, eventId: eventID)
+                parentMessage = nil
+            } else {
+                let _ = try await timeline?.send(msg: message)
+            }
             print("message sent")
             self.message = ""
         } catch {
@@ -287,111 +324,6 @@ struct RoomView: View {
             break
         }
         return CollectionDifference(changes)
-    }
-}
-
-struct TimelineItemCell: View {
-    var timelineItem: TimelineItem
-    @State var senderName = String()
-    @State var messageContent: MessageContent?
-    @State var reactions: [Reaction] = []
-    @State var toogleToReload = false
-    let addReaction: (_ eventID: String, _ reaction: String) async throws -> Void
-    var body: some View {
-        if let event = timelineItem.asEvent() {
-            HStack(alignment: .top) {
-                Text(toogleToReload.description)
-                Text(senderName).bold()
-                VStack {
-                    Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
-                    if let messageContent {
-                        Text("This message has additional data")
-                        Text("\(messageContent)")
-                    }
-                    reactionsView
-                }
-            }
-            .task {
-                switch event.senderProfile() {
-                case .ready(let displayName, let displayNameAmbiguous, let avatarUrl):
-                    senderName = displayName ?? ""
-                case .error(let message):
-                    print("ERROR: unable to load sender profile: \(message)")
-                default:
-                    senderName = "Unknown"
-                }
-                switch event.content().asMessage()?.msgtype() {
-                case .text(let content):
-                    if let html = content.formatted?.body {
-                        do {
-                            messageContent = try MessageContent.messageFromString(html)
-                        } catch {
-                            print("ERROR: Cannot parse html to MessageContent \(error)")
-                        }
-                    }
-                default:
-                    print("message type not supported")
-                }
-                reactions = timelineItem.asEvent()?.reactions() ?? []
-                
-            }
-            
-        } else if let virtual = timelineItem.asVirtual() {
-            switch virtual {
-            case .dayDivider(let ts):
-                Text(Date(timeIntervalSince1970: TimeInterval(ts / 1000)).description)
-            case .readMarker:
-                Text("read")
-            }
-        }
-    }
-    
-    @ViewBuilder
-    var reactionsView: some View {
-        HStack {
-            ForEach(timelineItem.asEvent()?.reactions() ?? [], id: \.key) { reaction in
-                HStack {
-                    Text("\(reaction.key) \(reaction.count)")
-                }
-                .padding(4)
-                .background(
-                    Capsule().fill(.white).stroke(.gray, lineWidth: 1)
-                )
-                
-            }
-            Button {
-                print("send a reaction")
-                guard let eventID = timelineItem.asEvent()?.eventId() else {
-                    print("no eventID")
-                    return
-                }
-                Task {
-                    do {
-                        try await addReaction(eventID, "🌱")
-                        print("reaction sent")
-                        reactions = timelineItem.asEvent()?.reactions() ?? []
-                        toogleToReload.toggle()
-                    } catch {
-                        print("Error: cannot send reaction \(error)")
-                    }
-                    
-                }
-            } label: {
-                Image(systemName: "face.smiling")
-                    .resizable()
-                    .scaledToFit()
-                    .size(20)
-                    .overlay {
-                        Image(systemName: "plus")
-                            .resizable()
-                            .scaledToFit()
-                            .size(8)
-                            .offset(x: 8, y: -10)
-                        
-                    }
-            }
-            Spacer()
-        }
     }
 }
 

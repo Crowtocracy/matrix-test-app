@@ -117,7 +117,15 @@ struct AppView: View {
   func updateRoomsWithDiffs(_ diffs: [RoomListEntriesUpdate]) {
     rooms = diffs.reduce(rooms) { currentItems, diff in
         processDiff(diff, on: currentItems)
-      }
+    }
+//    .filter({ summary in
+//        do {
+//            return try summary.roomListItem.fullRoom().joinedMembersCount() > 0
+//        } catch {
+//            return true
+//        }
+//        
+//    })
   }
 
   private func processDiff(_ diff: RoomListEntriesUpdate, on currentItems: [RoomSummary]) -> [RoomSummary] {
