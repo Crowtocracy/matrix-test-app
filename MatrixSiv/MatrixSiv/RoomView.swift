@@ -81,6 +81,7 @@ struct RoomView: View {
         }
     }
     func loadOlderMessages() async {
+        print("loading older messages")
         do {
             let _ = try await timeline?.paginateBackwards(numEvents: 10)
 //            print(try await timeline?.paginateBackwards(numEvents: 10))
@@ -111,8 +112,10 @@ struct RoomView: View {
                 .padding(10)
                 .background(.gray)
                 .clipShape(Capsule())
-                ForEach(timelineItems) { item in
+                .rotationEffect(Angle(degrees: 180)).scaleEffect(x: -1.0, y: 1.0, anchor: .center)
+                ForEach(timelineItems.reversed()) { item in
                     TimelineItemCell(timelineItem: item, timeline: $timeline, addReaction: toggleReaction)
+                        .rotationEffect(Angle(degrees: 180)).scaleEffect(x: -1.0, y: 1.0, anchor: .center)
                         .onLongPressGesture(perform: {
                             setReplyMessage(message: item)
                         })
@@ -127,8 +130,11 @@ struct RoomView: View {
                             }
                         }
                 }
+                Spacer()
+                
             }
         }
+        .rotationEffect(Angle(degrees: 180)).scaleEffect(x: -1.0, y: 1.0, anchor: .center)
     }
     
     func setReplyMessage(message: TimelineItem) {
@@ -260,7 +266,11 @@ struct RoomView: View {
 
 //        itemProxiesSubject.send(items)
         self.timelineItems = items
-        
+        if timelineItems.count < 10 {
+            Task {
+                await loadOlderMessages()
+            }
+        }
         print("Finished applying diffs, current items (\(timelineItems.count)) : \(timelineItems)")
         
     }

@@ -62,8 +62,8 @@
             filePath = "MatrixSiv/RoomView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "262"
-            endingLineNumber = "262"
+            startingLineNumber = "268"
+            endingLineNumber = "268"
             landmarkName = "updateItemsWithDiffs(_:)"
             landmarkType = "7">
          </BreakpointContent>

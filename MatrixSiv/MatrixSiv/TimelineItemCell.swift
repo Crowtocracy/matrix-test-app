@@ -19,39 +19,42 @@ struct TimelineItemCell: View {
     let addReaction: (_ eventID: String, _ reaction: String) async throws -> Void
     var body: some View {
         if let event = timelineItem.asEvent() {
-            VStack {
+            VStack(alignment: .leading) {
+                Text(senderName)
+                    .bold()
+                    .foregroundStyle(timelineItem.asEvent()?.sender() == "@trysiv-test1:matrix.org" ? .blue : .pink)
                 if let parentMessage {
                     Text(parentMessage)
-                        .padding(20)
-                        .background(
-                            Rectangle().stroke(.gray, lineWidth: 2)
+                        .foregroundStyle(.gray)
+                        .padding(.horizontal, 20)
+                        .overlay(
+                            Rectangle()
+                                .fill(.gray)
+                                .frame(width: 2),
+                            alignment: .leading
                         )
                 }
-                HStack(alignment: .top) {
-                    Text(toogleToReload.description)
-                    Text(senderName).bold()
-                    VStack {
-                        Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
-                        if let messageContent {
-                            Text("This message has additional data")
-                            Text("\(messageContent)")
-                        }
-                        reactionsView
-                    }
+                
+                Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
+                if let messageContent {
+                    Text("This message has additional data").font(.footnote)
+//                        Text("\(messageContent)")
                 }
+                reactionsView
+                
             }
-            .padding(20)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 5)
             .task {
-                
-                
                 switch event.senderProfile() {
                 case .ready(let displayName, let displayNameAmbiguous, let avatarUrl):
-                    senderName = displayName ?? ""
+                    senderName = event.sender() == "@trysiv-test1:matrix.org" ? "Me" : displayName ?? ""
                 case .error(let message):
                     print("ERROR: unable to load sender profile: \(message)")
                 default:
                     senderName = "Unknown"
                 }
+                senderName = event.sender()
                 switch event.content().asMessage()?.msgtype() {
                 case .text(let content):
                     if let html = content.formatted?.body {
@@ -83,6 +86,8 @@ struct TimelineItemCell: View {
             switch virtual {
             case .dayDivider(let ts):
                 Text(Date(timeIntervalSince1970: TimeInterval(ts / 1000)).description)
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
             case .readMarker:
                 Text("read")
             }
@@ -95,6 +100,9 @@ struct TimelineItemCell: View {
             ForEach(timelineItem.asEvent()?.reactions() ?? [], id: \.key) { reaction in
                 HStack {
                     Text("\(reaction.key) \(reaction.count)")
+                        .onTapGesture {
+                            toggleReaction(key: reaction.key)
+                        }
                 }
                 .padding(4)
                 .background(
@@ -103,22 +111,7 @@ struct TimelineItemCell: View {
                 
             }
             Button {
-                print("send a reaction")
-                guard let eventID = timelineItem.asEvent()?.eventId() else {
-                    print("no eventID")
-                    return
-                }
-                Task {
-                    do {
-                        try await addReaction(eventID, "🌱")
-                        print("reaction sent")
-                        reactions = timelineItem.asEvent()?.reactions() ?? []
-                        toogleToReload.toggle()
-                    } catch {
-                        print("Error: cannot send reaction \(error)")
-                    }
-                    
-                }
+                toggleReaction()
             } label: {
                 Image(systemName: "face.smiling")
                     .resizable()
@@ -134,6 +127,24 @@ struct TimelineItemCell: View {
                     }
             }
             Spacer()
+        }
+    }
+    func toggleReaction(key: String = "🌱") {
+        print("send a reaction")
+        guard let eventID = timelineItem.asEvent()?.eventId() else {
+            print("no eventID")
+            return
+        }
+        Task {
+            do {
+                try await addReaction(eventID, key)
+                print("reaction sent")
+                reactions = timelineItem.asEvent()?.reactions() ?? []
+                toogleToReload.toggle()
+            } catch {
+                print("Error: cannot send reaction \(error)")
+            }
+            
         }
     }
 }
