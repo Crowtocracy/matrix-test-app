@@ -16,6 +16,7 @@ struct RoomView: View {
     @State var timelineListenerTaskHandle: TaskHandle?
     @State var timeline: Timeline?
     @State var parentMessage: TimelineItem?
+    @State var showSendAlert = false
     var body: some View {
         VStack {
             header
@@ -188,14 +189,28 @@ struct RoomView: View {
                 }
                 
                 Button {
-                    print("sending message")
-                    Task {
-                        await sendMessage()
-                        // await sendObjectMessage()
-                    }
+                    showSendAlert = true
                 } label: {
                     Image(systemName: "paperplane")
                         .size(20)
+                }
+                .alert("Choose send method", isPresented: $showSendAlert) {
+                    Button("Send") {
+                        Task {
+                            await sendMessage()
+                        }
+                    }
+                    Button("Send Silently") {
+                        Task {
+                            await sendSilentMessage()
+                        }
+                    }
+                    Button("Send with Object") {
+                        Task {
+                            await sendObjectMessage()
+                        }
+                    }
+                    Button("Cancel", role: .cancel) { }
                 }
             }
         }
@@ -204,7 +219,27 @@ struct RoomView: View {
         .padding(.vertical, 10)
     }
     
-    
+    func sendSilentMessage() async {
+        print("sending silent message")
+        guard !message.isEmpty else {
+            print("empty message")
+            return
+        }
+        let noticeMessage = NoticeMessageContent(body: message, formatted: nil)
+        do {
+            let message = try messageEventContentNew(msgtype: .notice(content: noticeMessage))
+            if let eventID = parentMessage?.asEvent()?.eventId() {
+                let _ = try await timeline?.sendReply(msg: message, eventId: eventID)
+                parentMessage = nil
+            } else {
+                let _ = try await timeline?.send(msg: message)
+            }
+            print("message sent")
+            self.message = ""
+        } catch {
+            print("ERROR: Message not sent \(error)")
+        }
+    }
     private func sendMessage() async {
         guard !message.isEmpty else {
             print("empty message")

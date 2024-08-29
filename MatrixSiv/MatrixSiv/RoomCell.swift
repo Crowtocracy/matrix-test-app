@@ -11,6 +11,7 @@ import MatrixRustSDK
 struct RoomCell: View {
     let roomSummary: RoomSummary
     @State var lastMessage: String?
+    @State var roomInfo: RoomInfo?
     var body: some View {
         HStack {
             Avatar(avatarURL: roomSummary.avatarURL)
@@ -18,7 +19,7 @@ struct RoomCell: View {
                 Text(roomSummary.name)
                     .bold()
                 if let lastMessage {
-                    Text(lastMessage)
+                    Text(roomSummary.roomListItem.roomInfo())
                 }
                 
             }
@@ -28,18 +29,34 @@ struct RoomCell: View {
                 
             }
             Spacer()
-            if roomSummary.hasUnreadMessages {
+            if let unread = roomInfo?.notificationCount, unread > 0 {
                 Circle()
                     .fill(.green)
                     .size(15)
                     .overlay {
-                        Text("\(roomSummary.unreadMessagesCount)")
+                        Text("\(unread)")
                             .foregroundStyle(.white)
                     }
-                    
             }
         }
         .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
+        .task {
+            await getRoomInfo()
+        }
+        .task(id: "\(roomSummary.unreadNotificationsCount)\(roomSummary.unreadMessagesCount)\(roomSummary.hasUnreadNotifications)") {
+            await getRoomInfo()
+        }
+    }
+    func getRoomInfo() async {
+        print("fetching room info")
+        do {
+            roomInfo = try await roomSummary.roomListItem.roomInfo()
+            print("got roominfo")
+        } catch {
+            print("ERROR: failed to get roomInfo \(error)")
+        }
+        
     }
 }
 
