@@ -19,7 +19,7 @@ struct RoomCell: View {
                 Text(roomSummary.name)
                     .bold()
                 if let lastMessage {
-                    Text(roomSummary.roomListItem.roomInfo())
+                    Text(lastMessage)
                 }
                 
             }

@@ -23,6 +23,7 @@
 		F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15ED2422C65FF6400D9EE5B /* Home.swift */; };
 		F194C05C2C7EDBE40054A5B1 /* TimelineItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */; };
 		F1B5F1B62C6C7CCD006F093A /* MatrixRustSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F1B5F1B52C6C7CCD006F093A /* MatrixRustSDK */; };
+		F1F4E1902C807A180026C8E5 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F4E18F2C807A180026C8E5 /* AuthView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 		F15665C92C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixSivUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		F15ED2422C65FF6400D9EE5B /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineItemCell.swift; sourceTree = "<group>"; };
+		F1F4E18F2C807A180026C8E5 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +130,7 @@
 				F11B29F82C744B320099C758 /* RoomView.swift */,
 				F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */,
 				F101576B2C6B907A00763A01 /* AppView.swift */,
+				F1F4E18F2C807A180026C8E5 /* AuthView.swift */,
 				F10157692C6B8ED000763A01 /* HomeViewModel.swift */,
 				F15665AB2C65BE50002D4984 /* ContentView.swift */,
 				F15665AD2C65BE50002D4984 /* Item.swift */,
@@ -308,6 +311,7 @@
 				F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */,
 				F101576A2C6B8ED000763A01 /* HomeViewModel.swift in Sources */,
 				F11B29F72C74403B0099C758 /* RoomCell.swift in Sources */,
+				F1F4E1902C807A180026C8E5 /* AuthView.swift in Sources */,
 				F15665AA2C65BE50002D4984 /* MatrixSivApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -9,6 +9,9 @@ import SwiftUI
 import MatrixRustSDK
 import Combine
 
+enum AppLoginState {
+    case loggedIn, withSession, toLogin
+}
 struct AppView: View {
     @State var client: Client?
     @State var listener: ClientListener?
@@ -22,10 +25,38 @@ struct AppView: View {
     @State var sendQueueListenerTaskHandle: TaskHandle?
     @State var roomListService: RoomListService?
     @State var syncService: SyncService?
+    @State var loginState: AppLoginState = .withSession
 
   @State var cancellables = Set<AnyCancellable>()
     var body: some View {
         Text("Hello?")
+            .task(id: (client == nil).description) {
+                if let client {
+                    loginState = .loggedIn
+                }
+            }
+        if loginState != .loggedIn {
+            Button("Logout") {
+                Task {
+                    guard let client else {
+                        print("Failed to logout")
+                        return
+                    }
+                    do {
+                        let _ = try await client.logout()
+                        print("Successfully logged out")
+                    } catch {
+                        print("ERROR: Failed to logout \(error)")
+                    }
+                    Session.clearFromUserDefaults()
+                    self.client = nil
+                    loginState = .toLogin
+                    
+                    
+                }
+            }
+        }
+        
         Button("Try refresh?") {
             Task {
                 _ = try? await roomListService?.allRooms().entriesWithDynamicAdapters(pageSize: UInt32(200), listener: RoomListEntriesListenerProxy { updates in
@@ -35,81 +66,44 @@ struct AppView: View {
             }
             
         }
-        if let client {
+        
+        if let client, loginState == .loggedIn {
           Home(client: client, rooms: $rooms)
-        } else {
-            Text("Logging In")
+        } else if loginState == .withSession {
+            Text("Trying to restore session...")
                 .task {
-                    do {
-                        client = try await login()
-                      if let client {
-                        diffsPublisher
-                          .receive(on: serialDispatchQueue)
-                          .sink { self.updateRoomsWithDiffs($0) }
-                          .store(in: &cancellables)
-
-                        delegateHandle = client.setDelegate(delegate: ClientDelegateWrapper { isSoftLogout in
-                        })
-                        syncService = try await client.syncService().finish()
-                          guard let syncService else {
-                              print("no syncservice")
-                              return
-                          }
-                        await syncService.start()
-
-                        roomListService = syncService.roomListService()
-                          guard let roomListService else {
-                              print("no roomListService")
-                              return
-                          }
-
-                        let roomList = try await roomListService.allRooms()
-
-                        sendQueueListenerTaskHandle = client.subscribeToSendQueueStatus(listener: SendQueueRoomErrorListenerProxy { roomID, error in
-                          print("Send queue failed in room: \(roomID) with error: \(error)")
-                          self.sendQueueStatusSubject.send(false)
-                        })
-
-                        sendQueueStatusSubject
-                        // .combineLatest(networkMonitor.reachabilityPublisher)
-                          .combineLatest(Just<ReachabilityStatus>(.reachable))
-                          .debounce(for: 1.0, scheduler: DispatchQueue.main)
-                          .sink { enabled, reachability in
-                            print("Send queue status changed to enabled: \(enabled), reachability: \(reachability)")
-
-                            if enabled == false, reachability == .reachable {
-                              print("Enabling all send queues")
-                              Task {
-                                await client.enableAllSendQueues(enable: true)
-                              }
-                            }
-                          }
-                          .store(in: &cancellables)
-
-                        let listUpdatesSubscriptionResult = roomList.entriesWithDynamicAdapters(pageSize: UInt32(200), listener: RoomListEntriesListenerProxy { updates in
-                          diffsPublisher.send(updates)
-//                            updateRoomsWithDiffs(updates)
-                        })
-
-                          let stateUpdatesSubscriptionResult = try roomList.loadingState(listener: RoomListStateObserver { state in
-
-                            print("Received state update: \(state)")
-                            if state != .notLoaded {
-                              print("state loaded")
-
-                              listUpdatesSubscriptionResult.controller().resetToOnePage()
-                              _ = listUpdatesSubscriptionResult.controller().setFilter(kind: .all(filters: [.nonLeft]))
-                            }
-
-                          })
-                          stateUpdatesTaskHandle = stateUpdatesSubscriptionResult.stateStream
-
-                      }
-                    } catch {
-                        print("Error logging in: \(error)")
+                    if let newClient = await restoreSession() {
+                        loginState = .loggedIn
+                        client = newClient
+                    } else {
+                        loginState = .toLogin
                     }
                 }
-                
+        } else {
+            AuthView(client: $client)
+        }
+    }
+    
+    func restoreSession() async -> Client? {
+        print("restoring session")
+        guard let session = Session.getFromUserDefaults() else {
+            print("no session. proceeding to login")
+            return nil
+        }
+        do {
+            print("building client")
+            let newClient = try await ClientBuilder()
+                .sessionPath(path: URL.applicationSupportDirectory.path() + Date.now.description)
+                .serverNameOrHomeserverUrl(serverNameOrUrl: session.homeserverUrl)
+                .build()
+            
+            print("restore session")
+            try await newClient.restoreSession(session: session)
+            print("session restored")
+            return newClient
+        } catch {
+            print("ERROR: unable to restore session")
+            return nil
         }
     }
 
@@ -417,6 +411,10 @@ extension Session: Codable {
         } catch {
             print("ERROR: unable to encode to UserDefaults \(error)")
         }
+    }
+    
+    static public func clearFromUserDefaults() {
+        UserDefaults.standard.removeObject(forKey: "session")
     }
     static public func getFromUserDefaults() -> Session?  {
         do {
