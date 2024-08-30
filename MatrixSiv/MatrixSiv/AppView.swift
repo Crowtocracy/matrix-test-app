@@ -69,6 +69,10 @@ struct AppView: View {
 
             if let client, loginState == .loggedIn {
                 Home(client: client, rooms: $rooms)
+                    .task {
+//                        await createDMRoom()
+                        
+                    }
             } else if loginState == .withSession {
                 Text("Trying to restore session...")
                     .task {
@@ -85,6 +89,23 @@ struct AppView: View {
         }
         .task(id: client == nil) {
             await setupClient()
+        }
+    }
+    
+    func createDMRoom() async {
+        do {
+            print("getting dm with paul")
+            let room = try client?.getDmRoom(userId: "@paul:\(Homeserver.siv.url)")
+            let createRoomParams = CreateRoomParameters(name: nil, isEncrypted: false, isDirect: true, visibility: .private, preset: .trustedPrivateChat, invite: ["@\(TestUser.paul.username):\(Homeserver.siv.url)"])
+            print("creating dm room")
+            let _ = try await client?.createRoom(request: createRoomParams)
+            print("done creating dm")
+//                            print("joining paul's room")
+//                            try await room?.join()
+//                            print("sending paul a message")
+//                            let _ = try await room?.timeline().send(msg: messageEventContentFromMarkdown(md: "Hi testing"))
+        } catch {
+            print("ERROR: \(error)")
         }
     }
     

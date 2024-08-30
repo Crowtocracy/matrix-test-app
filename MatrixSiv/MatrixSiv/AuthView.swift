@@ -17,7 +17,7 @@ enum Homeserver: String {
         case .matrix:
             return "matrix.org"
         case .siv:
-            return "matrix.crowtocracy.etke.host"
+            return "crowtocracy.etke.host"
         }
     }
 }
