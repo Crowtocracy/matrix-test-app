@@ -23,6 +23,7 @@
 		F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15ED2422C65FF6400D9EE5B /* Home.swift */; };
 		F194C05C2C7EDBE40054A5B1 /* TimelineItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */; };
 		F1B5F1B62C6C7CCD006F093A /* MatrixRustSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F1B5F1B52C6C7CCD006F093A /* MatrixRustSDK */; };
+		F1E14EFC2C816DEE0083A763 /* ElementExtras.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E14EFB2C816DEE0083A763 /* ElementExtras.swift */; };
 		F1F4E1902C807A180026C8E5 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F4E18F2C807A180026C8E5 /* AuthView.swift */; };
 /* End PBXBuildFile section */
 
@@ -63,6 +64,7 @@
 		F15665C92C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixSivUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		F15ED2422C65FF6400D9EE5B /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineItemCell.swift; sourceTree = "<group>"; };
+		F1E14EFB2C816DEE0083A763 /* ElementExtras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementExtras.swift; sourceTree = "<group>"; };
 		F1F4E18F2C807A180026C8E5 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -130,6 +132,7 @@
 				F11B29F82C744B320099C758 /* RoomView.swift */,
 				F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */,
 				F101576B2C6B907A00763A01 /* AppView.swift */,
+				F1E14EFB2C816DEE0083A763 /* ElementExtras.swift */,
 				F1F4E18F2C807A180026C8E5 /* AuthView.swift */,
 				F10157692C6B8ED000763A01 /* HomeViewModel.swift */,
 				F15665AB2C65BE50002D4984 /* ContentView.swift */,
@@ -305,6 +308,7 @@
 				F11B29F92C744B320099C758 /* RoomView.swift in Sources */,
 				F194C05C2C7EDBE40054A5B1 /* TimelineItemCell.swift in Sources */,
 				F15665AC2C65BE50002D4984 /* ContentView.swift in Sources */,
+				F1E14EFC2C816DEE0083A763 /* ElementExtras.swift in Sources */,
 				F15665AE2C65BE50002D4984 /* Item.swift in Sources */,
 				F101576C2C6B907A00763A01 /* AppView.swift in Sources */,
 				DA5BDA832C734FB200C47B94 /* RoomSummary.swift in Sources */,
