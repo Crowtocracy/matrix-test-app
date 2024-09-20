@@ -35,7 +35,7 @@ struct TimelineItemCell: View {
                         )
                 }
                 
-                Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind())")
+                Text(event.content().asMessage()?.body() ?? "no message body \(event.content().kind()) \(event.content().asMessage()?.msgtype())")
                 if let messageContent {
                     Text("This message has additional data").font(.footnote)
 //                        Text("\(messageContent)")

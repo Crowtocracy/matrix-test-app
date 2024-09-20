@@ -28,6 +28,7 @@ import SwiftUI
             if isReady {
                 if let matrixManager = appState.matrixManager, appState.matrixAuthState == .loggedIn {
                     InboxView(matrixManager: matrixManager)
+//                    Home(clientName: "yo", client: matrixManager.client, rooms: .constant(matrixManager.rooms))
                 } else {
                     LoginView(appState: appState)
                 }
@@ -40,7 +41,7 @@ import SwiftUI
                 appState.matrixManager = MatrixManager(client: client)
                 appState.matrixAuthState = .loggedIn
             }
-            if appState.matrixAuthState == .loggedIn, let matrixManager = appState.matrixManager {
+            if appState.matrixAuthState == .loggedIn, nil != appState.matrixManager {
                 
             } else {
                 appState.matrixManager = nil

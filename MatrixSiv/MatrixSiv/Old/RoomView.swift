@@ -140,7 +140,8 @@ struct RoomView: View {
     
     func setReplyMessage(message: TimelineItem) {
         guard let _ = message.asEvent()?.content().asMessage()?.body() else {
-            print("Invalid parent message")
+            print("Invalid parent message \(message.asEvent()?.content().kind())")
+            
             return
         }
         parentMessage = message

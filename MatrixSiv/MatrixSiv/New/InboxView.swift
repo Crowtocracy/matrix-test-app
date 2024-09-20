@@ -10,6 +10,6 @@ import SwiftUI
 struct InboxView: View {
     @ObservedObject var matrixManager: MatrixManager
     var body: some View {
-        Text("Inboc View")
+        Text("Inbox View: \(matrixManager.rooms.count)")
     }
 }
