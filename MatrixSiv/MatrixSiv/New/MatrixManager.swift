@@ -4,9 +4,9 @@
 //
 //  Created by Rachel Castor on 9/20/24.
 //
-@preconcurrency import MatrixRustSDK
-import Foundation
 import CryptoKit
+import Foundation
+@preconcurrency import MatrixRustSDK
 
 @MainActor class MatrixManager: ObservableObject {
     let client: Client
@@ -14,11 +14,11 @@ import CryptoKit
     var sendQueueListenerTaskHandle: TaskHandle?
     var listUpdatesSubscriptionResult: RoomListEntriesWithDynamicAdaptersResult?
     var stateUpdatesTaskHandle: TaskHandle?
-    
+
     @Published var syncService: SyncService?
     @Published var roomListService: RoomListService?
     @Published var rooms: [RoomSummary] = []
-    
+
     static let homeserver = "crowtocracy.etke.host"
 
     static func restoreSession() async -> Client? {
@@ -44,7 +44,7 @@ import CryptoKit
             return nil
         }
     }
-    
+
     static func loginUser(username: String) async -> Client? {
         do {
             print("building client")
@@ -65,25 +65,29 @@ import CryptoKit
         }
         return nil
     }
-    
+
+    func getClientDisplayName() async -> String? {
+        return try? await client.displayName()
+    }
+
     static func generatePassword(username: String) -> String? {
         guard let secret = ProcessInfo.processInfo.environment["CROWTOCRACY_SECRET"] else {
             return nil
         }
-        
+
         let encodedUsername = Data(username.utf8)
         let encodedSecret = Data(secret.utf8)
-        
+
         var combinedData = Data()
         combinedData.append(encodedUsername)
         combinedData.append(encodedSecret)
-        
+
         let hashedData = SHA256.hash(data: combinedData)
         let hashedString = hashedData.map { String(format: "%02hhx", $0) }.joined()
-        
+
         return hashedString
     }
-    
+
     func logout() async throws {
         do {
             _ = try await client.logout()
@@ -93,21 +97,20 @@ import CryptoKit
             throw error
         }
     }
-    
+
     init(client: Client) {
         self.client = client
-        self.clientDelegateTaskHandle =  self.client.setDelegate(delegate: self)
+        self.clientDelegateTaskHandle = self.client.setDelegate(delegate: self)
         Task {
             self.syncService = try await client.syncService().finish()
             await syncService?.start()
-            roomListService = self.syncService?.roomListService()
+            self.roomListService = self.syncService?.roomListService()
             self.sendQueueListenerTaskHandle = client.subscribeToSendQueueStatus(listener: self)
             let roomList = try await roomListService?.allRooms()
             self.listUpdatesSubscriptionResult = roomList?.entriesWithDynamicAdapters(pageSize: UInt32(200), listener: self)
             let stateUpdatesSubscriptionResult = try roomList?.loadingState(listener: self)
-            stateUpdatesTaskHandle = stateUpdatesSubscriptionResult?.stateStream
+            self.stateUpdatesTaskHandle = stateUpdatesSubscriptionResult?.stateStream
         }
-        
     }
 }
 
@@ -115,7 +118,7 @@ extension MatrixManager: @preconcurrency ClientDelegate {
     func didReceiveAuthError(isSoftLogout: Bool) {
         print("didReceiveAuthError")
     }
-    
+
     func didRefreshTokens() {
         print("didRefreshTokens")
     }
@@ -131,8 +134,6 @@ extension MatrixManager: @preconcurrency SendQueueRoomErrorListener {
             }
         }
     }
-    
-    
 }
 
 extension MatrixManager: @preconcurrency RoomListEntriesListener {
@@ -144,8 +145,8 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
         Task { @MainActor in
             self.rooms = updatedRooms
         }
-        
     }
+
     private func processDiff(_ diff: RoomListEntriesUpdate, on currentItems: [RoomSummary]) -> [RoomSummary] {
         guard let collectionDiff = buildDiff(from: diff, on: currentItems) else {
             return currentItems
@@ -157,6 +158,7 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
 
         return updatedItems
     }
+
     private func buildDiff(from diff: RoomListEntriesUpdate, on rooms: [RoomSummary]) -> CollectionDifference<RoomSummary>? {
         var changes = [CollectionDifference<RoomSummary>.Change]()
 
@@ -215,7 +217,7 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
 
         return CollectionDifference(changes)
     }
-    
+
     private func buildRoomSummary(from roomListItem: RoomListItem) -> RoomSummary {
         let roomDetails = fetchRoomDetails(from: roomListItem)
 
@@ -226,11 +228,11 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
         let attributedLastMessage: AttributedString? = nil
         let lastMessageFormattedTimestamp: String? = nil
 
-        //  if let latestRoomMessage = roomDetails.latestEvent {
-        //    let lastMessage = EventTimelineItemProxy(item: latestRoomMessage, id: "0")
-        //    lastMessageFormattedTimestamp = lastMessage.timestamp.formattedMinimal()
-        //    attributedLastMessage = eventStringBuilder.buildAttributedString(for: lastMessage)
-        //  }
+//          if let latestRoomMessage = roomDetails.latestEvent {
+//            let lastMessage = EventTimelineItemProxy(item: latestRoomMessage, id: "0")
+//            lastMessageFormattedTimestamp = lastMessage.timestamp.formattedMinimal()
+//            attributedLastMessage = eventStringBuilder.buildAttributedString(for: lastMessage)
+//          }
 
         //  var inviterProxy: RoomMemberProxyProtocol?
         //  if let inviter = roomInfo.inviter {
@@ -260,7 +262,7 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
                            isMarkedUnread: roomInfo.isMarkedUnread,
                            isFavourite: roomInfo.isFavourite)
     }
-    
+
     private func fetchRoomDetails(from roomListItem: RoomListItem) -> (roomInfo: RoomInfo?, latestEvent: EventTimelineItem?) {
         class FetchResult {
             var roomInfo: RoomInfo?
@@ -280,7 +282,6 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
         semaphore.wait()
         return (result.roomInfo, result.latestEvent)
     }
-
 }
 
 extension MatrixManager: @preconcurrency RoomListLoadingStateListener {
@@ -289,10 +290,8 @@ extension MatrixManager: @preconcurrency RoomListLoadingStateListener {
         if state != .notLoaded {
             print("state loaded")
 
-            self.listUpdatesSubscriptionResult?.controller().resetToOnePage()
-            _ = self.listUpdatesSubscriptionResult?.controller().setFilter(kind: .all(filters: [.nonLeft]))
+            listUpdatesSubscriptionResult?.controller().resetToOnePage()
+            _ = listUpdatesSubscriptionResult?.controller().setFilter(kind: .all(filters: [.nonLeft]))
         }
     }
-    
-    
 }
