@@ -85,6 +85,11 @@
             value = "trysiv-test1"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CROWTOCRACY_SECRET"
+            value = "birds!"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction

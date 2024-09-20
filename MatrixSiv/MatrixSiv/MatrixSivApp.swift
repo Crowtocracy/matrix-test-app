@@ -25,7 +25,7 @@ struct MatrixSivApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppView()
+            SivApp()
         }
         .modelContainer(sharedModelContainer)
     }

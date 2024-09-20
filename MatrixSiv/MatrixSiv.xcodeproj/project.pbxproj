@@ -21,6 +21,12 @@
 		F15665C82C65BE51002D4984 /* MatrixSivUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665C72C65BE51002D4984 /* MatrixSivUITests.swift */; };
 		F15665CA2C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665C92C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift */; };
 		F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15ED2422C65FF6400D9EE5B /* Home.swift */; };
+		F177B57B2C9D144A009C22EE /* SivApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F177B57A2C9D144A009C22EE /* SivApp.swift */; };
+		F177B57D2C9D1962009C22EE /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F177B57C2C9D1962009C22EE /* AppState.swift */; };
+		F177B57F2C9D1B4C009C22EE /* MatrixManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F177B57E2C9D1B44009C22EE /* MatrixManager.swift */; };
+		F177B5812C9D2236009C22EE /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F177B5802C9D2236009C22EE /* LoginView.swift */; };
+		F177B5852C9D2283009C22EE /* InboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F177B5842C9D2283009C22EE /* InboxView.swift */; };
+		F177B5872C9D2293009C22EE /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F177B5862C9D2293009C22EE /* ChatView.swift */; };
 		F194C05C2C7EDBE40054A5B1 /* TimelineItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */; };
 		F1B5F1B62C6C7CCD006F093A /* MatrixRustSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F1B5F1B52C6C7CCD006F093A /* MatrixRustSDK */; };
 		F1E14EFC2C816DEE0083A763 /* ElementExtras.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E14EFB2C816DEE0083A763 /* ElementExtras.swift */; };
@@ -63,6 +69,12 @@
 		F15665C72C65BE51002D4984 /* MatrixSivUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixSivUITests.swift; sourceTree = "<group>"; };
 		F15665C92C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixSivUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		F15ED2422C65FF6400D9EE5B /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
+		F177B57A2C9D144A009C22EE /* SivApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SivApp.swift; sourceTree = "<group>"; };
+		F177B57C2C9D1962009C22EE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		F177B57E2C9D1B44009C22EE /* MatrixManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixManager.swift; sourceTree = "<group>"; };
+		F177B5802C9D2236009C22EE /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		F177B5842C9D2283009C22EE /* InboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboxView.swift; sourceTree = "<group>"; };
+		F177B5862C9D2293009C22EE /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineItemCell.swift; sourceTree = "<group>"; };
 		F1E14EFB2C816DEE0083A763 /* ElementExtras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementExtras.swift; sourceTree = "<group>"; };
 		F1F4E18F2C807A180026C8E5 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
@@ -125,18 +137,10 @@
 		F15665A82C65BE50002D4984 /* MatrixSiv */ = {
 			isa = PBXGroup;
 			children = (
+				F177B5772C9D1411009C22EE /* New */,
 				DA5BDA812C734F8200C47B94 /* Element */,
 				F15665A92C65BE50002D4984 /* MatrixSivApp.swift */,
-				F15ED2422C65FF6400D9EE5B /* Home.swift */,
-				F11B29F62C74403B0099C758 /* RoomCell.swift */,
-				F11B29F82C744B320099C758 /* RoomView.swift */,
-				F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */,
-				F101576B2C6B907A00763A01 /* AppView.swift */,
-				F1E14EFB2C816DEE0083A763 /* ElementExtras.swift */,
-				F1F4E18F2C807A180026C8E5 /* AuthView.swift */,
-				F10157692C6B8ED000763A01 /* HomeViewModel.swift */,
-				F15665AB2C65BE50002D4984 /* ContentView.swift */,
-				F15665AD2C65BE50002D4984 /* Item.swift */,
+				F177B5762C9D13F6009C22EE /* Old */,
 				F15665AF2C65BE51002D4984 /* Assets.xcassets */,
 				F15665B12C65BE51002D4984 /* MatrixSiv.entitlements */,
 				F15665B22C65BE51002D4984 /* Preview Content */,
@@ -167,6 +171,36 @@
 				F15665C92C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift */,
 			);
 			path = MatrixSivUITests;
+			sourceTree = "<group>";
+		};
+		F177B5762C9D13F6009C22EE /* Old */ = {
+			isa = PBXGroup;
+			children = (
+				F15ED2422C65FF6400D9EE5B /* Home.swift */,
+				F11B29F62C74403B0099C758 /* RoomCell.swift */,
+				F11B29F82C744B320099C758 /* RoomView.swift */,
+				F194C05B2C7EDBE40054A5B1 /* TimelineItemCell.swift */,
+				F101576B2C6B907A00763A01 /* AppView.swift */,
+				F1E14EFB2C816DEE0083A763 /* ElementExtras.swift */,
+				F1F4E18F2C807A180026C8E5 /* AuthView.swift */,
+				F10157692C6B8ED000763A01 /* HomeViewModel.swift */,
+				F15665AB2C65BE50002D4984 /* ContentView.swift */,
+				F15665AD2C65BE50002D4984 /* Item.swift */,
+			);
+			path = Old;
+			sourceTree = "<group>";
+		};
+		F177B5772C9D1411009C22EE /* New */ = {
+			isa = PBXGroup;
+			children = (
+				F177B57A2C9D144A009C22EE /* SivApp.swift */,
+				F177B5802C9D2236009C22EE /* LoginView.swift */,
+				F177B57E2C9D1B44009C22EE /* MatrixManager.swift */,
+				F177B57C2C9D1962009C22EE /* AppState.swift */,
+				F177B5862C9D2293009C22EE /* ChatView.swift */,
+				F177B5842C9D2283009C22EE /* InboxView.swift */,
+			);
+			path = New;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -306,16 +340,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11B29F92C744B320099C758 /* RoomView.swift in Sources */,
+				F177B5852C9D2283009C22EE /* InboxView.swift in Sources */,
 				F194C05C2C7EDBE40054A5B1 /* TimelineItemCell.swift in Sources */,
 				F15665AC2C65BE50002D4984 /* ContentView.swift in Sources */,
+				F177B5872C9D2293009C22EE /* ChatView.swift in Sources */,
 				F1E14EFC2C816DEE0083A763 /* ElementExtras.swift in Sources */,
 				F15665AE2C65BE50002D4984 /* Item.swift in Sources */,
 				F101576C2C6B907A00763A01 /* AppView.swift in Sources */,
 				DA5BDA832C734FB200C47B94 /* RoomSummary.swift in Sources */,
 				F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */,
+				F177B57F2C9D1B4C009C22EE /* MatrixManager.swift in Sources */,
 				F101576A2C6B8ED000763A01 /* HomeViewModel.swift in Sources */,
+				F177B57D2C9D1962009C22EE /* AppState.swift in Sources */,
 				F11B29F72C74403B0099C758 /* RoomCell.swift in Sources */,
 				F1F4E1902C807A180026C8E5 /* AuthView.swift in Sources */,
+				F177B57B2C9D144A009C22EE /* SivApp.swift in Sources */,
+				F177B5812C9D2236009C22EE /* LoginView.swift in Sources */,
 				F15665AA2C65BE50002D4984 /* MatrixSivApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -501,7 +541,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -541,7 +581,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
