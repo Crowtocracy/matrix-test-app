@@ -16,8 +16,14 @@ struct InboxView: View {
             Text("Inbox View: \(matrixManager.rooms.count)")
             ScrollView {
                 VStack {
-                    ForEach(matrixManager.roomListItems, id: \.id) { room in
-                        Text(room.name)
+                    ForEach(matrixManager.rooms, id: \.id) { room in
+                        VStack {
+                            Text(room.displayName ?? room.id).bold()
+                            Text(room.lastMessage?.body ?? "No Message")
+                            Text("\(room.lastMessage?.timestamp.description ?? "no timestamp")")
+                            Divider()
+                        }
+                        
                     }
                 }
             }
