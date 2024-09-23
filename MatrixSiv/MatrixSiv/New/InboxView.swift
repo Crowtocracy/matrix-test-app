@@ -16,7 +16,7 @@ struct InboxView: View {
             Text("Inbox View: \(matrixManager.rooms.count)")
             ScrollView {
                 VStack {
-                    ForEach(matrixManager.rooms, id: \.id) { room in
+                    ForEach(matrixManager.roomListItems, id: \.id) { room in
                         Text(room.name)
                     }
                 }

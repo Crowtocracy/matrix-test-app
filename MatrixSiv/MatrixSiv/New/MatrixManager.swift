@@ -18,6 +18,7 @@ import Foundation
     @Published var syncService: SyncService?
     @Published var roomListService: RoomListService?
     @Published var rooms: [RoomSummary] = []
+    @Published var roomListItems: [RoomListItem] = []
 
     static let homeserver = "crowtocracy.etke.host"
 
@@ -139,15 +140,15 @@ extension MatrixManager: @preconcurrency SendQueueRoomErrorListener {
 extension MatrixManager: @preconcurrency RoomListEntriesListener {
     func onUpdate(roomEntriesUpdate: [MatrixRustSDK.RoomListEntriesUpdate]) {
         print("received room list update")
-        let updatedRooms = roomEntriesUpdate.reduce(rooms) { currentItems, diff in
-            processDiff(diff, on: currentItems)
+        let updatedRooms = roomEntriesUpdate.reduce(roomListItems) { currentItems, diff in
+            processDiffNew(diff, on: currentItems)
         }
         Task { @MainActor in
-            self.rooms = updatedRooms
+            self.roomListItems = updatedRooms
         }
     }
 
-    private func processDiff(_ diff: RoomListEntriesUpdate, on currentItems: [RoomSummary]) -> [RoomSummary] {
+    private func processDiffNew(_ diff: RoomListEntriesUpdate, on currentItems: [RoomListItem]) -> [RoomListItem] {
         guard let collectionDiff = buildDiff(from: diff, on: currentItems) else {
             return currentItems
         }
@@ -158,14 +159,14 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
 
         return updatedItems
     }
-
-    private func buildDiff(from diff: RoomListEntriesUpdate, on rooms: [RoomSummary]) -> CollectionDifference<RoomSummary>? {
-        var changes = [CollectionDifference<RoomSummary>.Change]()
+    
+    private func buildDiff(from diff: RoomListEntriesUpdate, on rooms: [RoomListItem]) -> CollectionDifference<RoomListItem>? {
+        var changes = [CollectionDifference<RoomListItem>.Change]()
 
         switch diff {
         case .append(let values):
             for (index, value) in values.enumerated() {
-                let summary = buildRoomSummary(from: value)
+                let summary = value
                 changes.append(.insert(offset: rooms.count + index, element: summary, associatedWith: nil))
             }
         case .clear:
@@ -173,7 +174,7 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
                 changes.append(.remove(offset: index, element: value, associatedWith: nil))
             }
         case .insert(let index, let value):
-            let summary = buildRoomSummary(from: value)
+            let summary = value
             changes.append(.insert(offset: Int(index), element: summary, associatedWith: nil))
         case .popBack:
             guard let value = rooms.last else {
@@ -185,10 +186,10 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
             let summary = rooms[0]
             changes.append(.remove(offset: 0, element: summary, associatedWith: nil))
         case .pushBack(let value):
-            let summary = buildRoomSummary(from: value)
+            let summary = value
             changes.append(.insert(offset: rooms.count, element: summary, associatedWith: nil))
         case .pushFront(let value):
-            let summary = buildRoomSummary(from: value)
+            let summary = value
             changes.append(.insert(offset: 0, element: summary, associatedWith: nil))
         case .remove(let index):
             let summary = rooms[Int(index)]
@@ -199,12 +200,11 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
             }
 
             for (index, value) in values.enumerated() {
-                changes.append(.insert(offset: index, element: buildRoomSummary(from: value), associatedWith: nil))
+                changes.append(.insert(offset: index, element: value, associatedWith: nil))
             }
         case .set(let index, let value):
-            let summary = buildRoomSummary(from: value)
-            changes.append(.remove(offset: Int(index), element: summary, associatedWith: nil))
-            changes.append(.insert(offset: Int(index), element: summary, associatedWith: nil))
+            changes.append(.remove(offset: Int(index), element: value, associatedWith: nil))
+            changes.append(.insert(offset: Int(index), element: value, associatedWith: nil))
         case .truncate(let length):
             for (index, value) in rooms.enumerated() {
                 if index < length {
@@ -218,70 +218,6 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
         return CollectionDifference(changes)
     }
 
-    private func buildRoomSummary(from roomListItem: RoomListItem) -> RoomSummary {
-        let roomDetails = fetchRoomDetails(from: roomListItem)
-
-        guard let roomInfo = roomDetails.roomInfo else {
-            fatalError("Missing room info for \(roomListItem.id())")
-        }
-
-        let attributedLastMessage: AttributedString? = nil
-        let lastMessageFormattedTimestamp: String? = nil
-
-//          if let latestRoomMessage = roomDetails.latestEvent {
-//            let lastMessage = EventTimelineItemProxy(item: latestRoomMessage, id: "0")
-//            lastMessageFormattedTimestamp = lastMessage.timestamp.formattedMinimal()
-//            attributedLastMessage = eventStringBuilder.buildAttributedString(for: lastMessage)
-//          }
-
-        //  var inviterProxy: RoomMemberProxyProtocol?
-        //  if let inviter = roomInfo.inviter {
-        //    inviterProxy = RoomMemberProxy(member: inviter)
-        //  }
-
-        // MARK: - modified
-
-        //  let notificationMode = roomInfo.userDefinedNotificationMode.flatMap { RoomNotificationModeProxy.from(roomNotificationMode: $0) }
-
-        return RoomSummary(roomListItem: roomListItem,
-                           id: roomInfo.id,
-                           isInvite: roomInfo.membership == .invited,
-                           //                     inviter: inviterProxy,
-                           name: roomInfo.displayName ?? roomInfo.id,
-                           isDirect: roomInfo.isDirect,
-                           avatarURL: roomInfo.avatarUrl.flatMap(URL.init(string:)),
-                           //                     heroes: [], // MARK - modified
-                           lastMessage: attributedLastMessage,
-                           lastMessageFormattedTimestamp: lastMessageFormattedTimestamp,
-                           unreadMessagesCount: UInt(roomInfo.numUnreadMessages),
-                           unreadMentionsCount: UInt(roomInfo.numUnreadMentions),
-                           unreadNotificationsCount: UInt(roomInfo.numUnreadNotifications),
-                           //                     notificationMode: .none, // MARK - modified
-                           canonicalAlias: roomInfo.canonicalAlias,
-                           hasOngoingCall: roomInfo.hasRoomCall,
-                           isMarkedUnread: roomInfo.isMarkedUnread,
-                           isFavourite: roomInfo.isFavourite)
-    }
-
-    private func fetchRoomDetails(from roomListItem: RoomListItem) -> (roomInfo: RoomInfo?, latestEvent: EventTimelineItem?) {
-        class FetchResult {
-            var roomInfo: RoomInfo?
-            var latestEvent: EventTimelineItem?
-        }
-
-        let semaphore = DispatchSemaphore(value: 0)
-        let result = FetchResult()
-
-        Task {
-            do {
-                result.latestEvent = await roomListItem.latestEvent()
-                result.roomInfo = try await roomListItem.roomInfo()
-            } catch {}
-            semaphore.signal()
-        }
-        semaphore.wait()
-        return (result.roomInfo, result.latestEvent)
-    }
 }
 
 extension MatrixManager: @preconcurrency RoomListLoadingStateListener {
@@ -294,4 +230,62 @@ extension MatrixManager: @preconcurrency RoomListLoadingStateListener {
             _ = listUpdatesSubscriptionResult?.controller().setFilter(kind: .all(filters: [.nonLeft]))
         }
     }
+}
+
+struct SivMatrixRoom: Identifiable {
+    let id: String
+    let fullRoom: MatrixRustSDK.Room
+    let displayName: String?
+    let topic: String?
+    let alias: String?
+    let lastMessage: SivMessage?
+}
+
+extension RoomListItem {
+    func generateSivMatrixRoom() async throws -> SivMatrixRoom {
+        let id = self.id()
+        let room = try self.fullRoom()
+        let fullRoom = room
+        let displayName = self.displayName()
+        let topic = room.topic()
+        let alias = room.canonicalAlias()
+        let roomInfo = try await room.roomInfo()
+        var lastMessage: SivMessage? = nil
+        if let latestEvent = await self.latestEvent() {
+            lastMessage = latestEvent.generateSivMessage()
+        }
+        
+        return SivMatrixRoom(id: id, fullRoom: fullRoom, displayName: displayName, topic: topic, alias: alias, lastMessage: lastMessage)
+        
+
+    }
+}
+
+extension EventTimelineItem {
+    func generateSivMessage() -> SivMessage? {
+        guard let id = self.eventId() else { return nil }
+        let timestamp = self.timestamp()
+        if let message = self.content().asMessage() {
+            switch message.msgtype() {
+            case .notice(let content):
+                return SivMessage(id: id, body: content.body, timestamp: timestamp, formatted: nil, isNotice: true)
+            case .text(let content):
+                return SivMessage(id: id, body: content.body, timestamp: timestamp, formatted: content.formatted?.body, isNotice: false)
+            default:
+                print("message is not text or notice")
+                break
+            }
+        }
+        return nil
+    }
+}
+
+
+
+struct SivMessage {
+    let id: String
+    let body: String
+    let timestamp: UInt64
+    let formatted: String?
+    let isNotice: Bool
 }
