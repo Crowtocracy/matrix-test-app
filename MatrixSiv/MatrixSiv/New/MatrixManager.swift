@@ -139,40 +139,7 @@ extension MatrixManager: @preconcurrency SendQueueRoomErrorListener {
 
 extension MatrixManager: @preconcurrency RoomListEntriesListener {
     func onUpdate(roomEntriesUpdate: [MatrixRustSDK.RoomListEntriesUpdate]) {
-//        var roomsCopy = rooms
-//        Task {
-//            print("received room list update")
-//
-//            let updatedRooms = await roomEntriesUpdate.asyncReduce(roomsCopy) { currentItems, diff in
-//                await processDiffNew(diff, on: currentItems)
-//            }
-//            await MainActor.run {
-//                self.rooms = updatedRooms
-//            }
-//        }
-//        print("received room list update")
-//        let updatedRooms = roomEntriesUpdate.reduce(roomListItems) { currentItems, diff in
-//            processDiffNew(diff, on: currentItems)
-//        }
-//        Task { @MainActor in
-//            self.roomListItems = updatedRooms
-//            var updatedSivRooms: [SivMatrixRoom] = []
-//            for room in updatedRooms {
-//                if let sivRoom = await room.generateSivMatrixRoom() {
-//                    updatedSivRooms.append(sivRoom)
-//                }
-//            }
-//            self.rooms = updatedSivRooms
-//
-//        }
         self.customRoomUpdate(roomEntriesUpdate: roomEntriesUpdate)
-
-//        let updatedRooms = roomEntriesUpdate.reduce(rooms) { currentItems, diff in
-//            processDiffNew(diff, on: currentItems)
-//        }
-//        Task { @MainActor in
-//            self.rooms = updatedRooms
-//        }
     }
 
     private func customRoomUpdate(roomEntriesUpdate: [MatrixRustSDK.RoomListEntriesUpdate]) {
@@ -180,7 +147,7 @@ extension MatrixManager: @preconcurrency RoomListEntriesListener {
             for update in roomEntriesUpdate {
                 switch update {
                 case .append(let values):
-                    
+
                     self.roomListItems.append(contentsOf: values)
                 case .clear:
                     self.roomListItems = []
