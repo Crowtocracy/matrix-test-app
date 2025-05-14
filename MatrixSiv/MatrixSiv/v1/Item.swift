@@ -4,7 +4,7 @@
 //
 //  Created by Rachel Castor on 8/9/24.
 //
-
+/*
 import Foundation
 import SwiftData
 
@@ -16,3 +16,4 @@ final class Item {
         self.timestamp = timestamp
     }
 }
+*/

@@ -3,22 +3,17 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F101576A2C6B8ED000763A01 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10157692C6B8ED000763A01 /* HomeViewModel.swift */; };
-		F101576C2C6B907A00763A01 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F101576B2C6B907A00763A01 /* AppView.swift */; };
 		F15665AA2C65BE50002D4984 /* MatrixSivApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665A92C65BE50002D4984 /* MatrixSivApp.swift */; };
-		F15665AC2C65BE50002D4984 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665AB2C65BE50002D4984 /* ContentView.swift */; };
-		F15665AE2C65BE50002D4984 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665AD2C65BE50002D4984 /* Item.swift */; };
 		F15665B02C65BE51002D4984 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F15665AF2C65BE51002D4984 /* Assets.xcassets */; };
 		F15665B42C65BE51002D4984 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F15665B32C65BE51002D4984 /* Preview Assets.xcassets */; };
 		F15665BE2C65BE51002D4984 /* MatrixSivTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665BD2C65BE51002D4984 /* MatrixSivTests.swift */; };
 		F15665C82C65BE51002D4984 /* MatrixSivUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665C72C65BE51002D4984 /* MatrixSivUITests.swift */; };
 		F15665CA2C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15665C92C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift */; };
-		F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15ED2422C65FF6400D9EE5B /* Home.swift */; };
-		F15ED24A2C660D6700D9EE5B /* MatrixRustSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F15ED2492C660D6700D9EE5B /* MatrixRustSDK */; };
+		F1EF1C5F2DBB8EE000E92F2D /* MatrixRustSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F1EF1C5E2DBB8EE000E92F2D /* MatrixRustSDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,12 +34,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		F10157692C6B8ED000763A01 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
-		F101576B2C6B907A00763A01 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		F15665A62C65BE50002D4984 /* MatrixSiv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatrixSiv.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F15665A92C65BE50002D4984 /* MatrixSivApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixSivApp.swift; sourceTree = "<group>"; };
-		F15665AB2C65BE50002D4984 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		F15665AD2C65BE50002D4984 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		F15665AF2C65BE51002D4984 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F15665B12C65BE51002D4984 /* MatrixSiv.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MatrixSiv.entitlements; sourceTree = "<group>"; };
 		F15665B32C65BE51002D4984 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -53,15 +44,19 @@
 		F15665C32C65BE51002D4984 /* MatrixSivUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MatrixSivUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F15665C72C65BE51002D4984 /* MatrixSivUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixSivUITests.swift; sourceTree = "<group>"; };
 		F15665C92C65BE51002D4984 /* MatrixSivUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixSivUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		F15ED2422C65FF6400D9EE5B /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F1EF1C622DBB900500E92F2D /* v1 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = v1; sourceTree = "<group>"; };
+		F1EF1C642DBB902400E92F2D /* v2 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = v2; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		F15665A32C65BE50002D4984 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F15ED24A2C660D6700D9EE5B /* MatrixRustSDK in Frameworks */,
+				F1EF1C5F2DBB8EE000E92F2D /* MatrixRustSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,12 +100,9 @@
 		F15665A82C65BE50002D4984 /* MatrixSiv */ = {
 			isa = PBXGroup;
 			children = (
+				F1EF1C642DBB902400E92F2D /* v2 */,
+				F1EF1C622DBB900500E92F2D /* v1 */,
 				F15665A92C65BE50002D4984 /* MatrixSivApp.swift */,
-				F15ED2422C65FF6400D9EE5B /* Home.swift */,
-				F101576B2C6B907A00763A01 /* AppView.swift */,
-				F10157692C6B8ED000763A01 /* HomeViewModel.swift */,
-				F15665AB2C65BE50002D4984 /* ContentView.swift */,
-				F15665AD2C65BE50002D4984 /* Item.swift */,
 				F15665AF2C65BE51002D4984 /* Assets.xcassets */,
 				F15665B12C65BE51002D4984 /* MatrixSiv.entitlements */,
 				F15665B22C65BE51002D4984 /* Preview Content */,
@@ -158,9 +150,13 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				F1EF1C622DBB900500E92F2D /* v1 */,
+				F1EF1C642DBB902400E92F2D /* v2 */,
+			);
 			name = MatrixSiv;
 			packageProductDependencies = (
-				F15ED2492C660D6700D9EE5B /* MatrixRustSDK */,
+				F1EF1C5E2DBB8EE000E92F2D /* MatrixRustSDK */,
 			);
 			productName = MatrixSiv;
 			productReference = F15665A62C65BE50002D4984 /* MatrixSiv.app */;
@@ -235,7 +231,7 @@
 			);
 			mainGroup = F156659D2C65BE50002D4984;
 			packageReferences = (
-				F15ED2482C660D6700D9EE5B /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */,
+				F1EF1C5D2DBB8EE000E92F2D /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */,
 			);
 			productRefGroup = F15665A72C65BE50002D4984 /* Products */;
 			projectDirPath = "";
@@ -279,11 +275,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F15665AC2C65BE50002D4984 /* ContentView.swift in Sources */,
-				F15665AE2C65BE50002D4984 /* Item.swift in Sources */,
-				F101576C2C6B907A00763A01 /* AppView.swift in Sources */,
-				F15ED2432C65FF6400D9EE5B /* Home.swift in Sources */,
-				F101576A2C6B8ED000763A01 /* HomeViewModel.swift in Sources */,
 				F15665AA2C65BE50002D4984 /* MatrixSivApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -643,20 +634,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		F15ED2482C660D6700D9EE5B /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */ = {
+		F1EF1C5D2DBB8EE000E92F2D /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/element-hq/matrix-rust-components-swift";
+			repositoryURL = "https://github.com/matrix-org/matrix-rust-components-swift/";
 			requirement = {
-				kind = exactVersion;
-				version = 1.0.11;
+				kind = upToNextMajorVersion;
+				minimumVersion = 25.4.16;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		F15ED2492C660D6700D9EE5B /* MatrixRustSDK */ = {
+		F1EF1C5E2DBB8EE000E92F2D /* MatrixRustSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F15ED2482C660D6700D9EE5B /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */;
+			package = F1EF1C5D2DBB8EE000E92F2D /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */;
 			productName = MatrixRustSDK;
 		};
 /* End XCSwiftPackageProductDependency section */

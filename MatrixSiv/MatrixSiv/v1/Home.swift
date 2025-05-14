@@ -8,6 +8,7 @@
 import SwiftUI
 import MatrixRustSDK
 
+/*
 struct Home: View {
     @State var clientName: String? = nil
     @StateObject var viewModel: HomeViewModel
@@ -92,3 +93,4 @@ struct Home: View {
 //#Preview {
 //    Home()
 //}
+*/

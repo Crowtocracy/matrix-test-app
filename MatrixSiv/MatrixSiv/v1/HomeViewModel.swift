@@ -5,6 +5,7 @@
 //  Created by Rachel Castor on 8/13/24.
 //
 
+/*
 import Foundation
 import MatrixRustSDK
 import CryptoKit
@@ -88,3 +89,4 @@ class HomeViewModel: ClientDelegate, ObservableObject, RoomListServiceStateListe
     }
     
 }
+*/

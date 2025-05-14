@@ -12,7 +12,7 @@ import SwiftData
 struct MatrixSivApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+//            Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -25,7 +25,7 @@ struct MatrixSivApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppView()
+            AppView2()
         }
         .modelContainer(sharedModelContainer)
     }
