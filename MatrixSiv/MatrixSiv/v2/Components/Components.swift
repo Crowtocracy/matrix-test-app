@@ -28,8 +28,8 @@ extension View {
         self.frame(width: size, height: size)
     }
     
-    func sivAvatar() -> some View {
-        self.squareSize(44)
+    func sivAvatar(_ size: CGFloat = 44) -> some View {
+        self.squareSize(size)
             .background(.sivGray4)
             .foregroundStyle(.sivGray3)
             .clipShape(Circle())
@@ -37,9 +37,9 @@ extension View {
 }
 
 extension Image {
-    func sivAvatarImage() -> some View {
+    func sivAvatarImage(_ size: CGFloat = 44) -> some View {
         self.resizable()
-            .sivAvatar()
+            .sivAvatar(size)
     }
 }
 enum ButtonSize {

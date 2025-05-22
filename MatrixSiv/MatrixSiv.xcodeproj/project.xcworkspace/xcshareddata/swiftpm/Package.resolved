@@ -1,6 +1,15 @@
 {
-  "originHash" : "1dbdc7dd7c5a16b91647525a531257e6c081bf1e9f28897dc0a3b752c07a7bb8",
+  "originHash" : "a9a6a2e67bfc1f5496a0a76f2651ac18ffde2cf8b9c1c1bb528ec9d20329a7c0",
   "pins" : [
+    {
+      "identity" : "kingfisher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/onevcat/Kingfisher.git",
+      "state" : {
+        "revision" : "7deda23bbdca612076c5c315003d8638a08ed0f1",
+        "version" : "8.3.2"
+      }
+    },
     {
       "identity" : "matrix-rust-components-swift",
       "kind" : "remoteSourceControl",
