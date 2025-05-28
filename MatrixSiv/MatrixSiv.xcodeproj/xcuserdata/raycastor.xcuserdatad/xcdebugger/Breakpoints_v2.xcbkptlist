@@ -24,15 +24,31 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "645ACB15-C288-4D31-8603-7EAFA07AFA09"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "MatrixSiv/v2/Matrix/RoomManager.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "140"
+            endingLineNumber = "140"
+            landmarkName = "updateItemsWithDiffs(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6A39D0E7-5903-4894-B827-E48CF3006C31"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "MatrixSiv/v2/Matrix/RoomManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "122"
-            endingLineNumber = "122"
-            landmarkName = "updateItemsWithDiffs(_:)"
+            startingLineNumber = "116"
+            endingLineNumber = "116"
+            landmarkName = "onUpdate(diff:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

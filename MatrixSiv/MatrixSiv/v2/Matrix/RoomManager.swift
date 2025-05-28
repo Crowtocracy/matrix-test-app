@@ -82,6 +82,23 @@ class RoomManager: ObservableObject {
         loadedOldest = try await timeline.paginateBackwards(numEvents: 10)
         backPaginationStatusTaskHandle = try await timeline.subscribeToBackPaginationStatus(listener: self)
     }
+    
+    func sendPlainMessage(message: String, parentMessage: SivMessage?) async {
+        do {
+            let newEvent = messageEventContentFromMarkdown(md: message)
+            if let parentMessage {
+                try await timeline?.sendReply(msg: newEvent, replyParams: .init(eventId: parentMessage.id, enforceThread: true, replyWithinThread: true))
+            } else {
+                self.sendHandle = try await timeline?.send(msg: newEvent)
+            }
+            print("Message sent successfully")
+        } catch {
+            print("Error sending message: \(error)")
+        }
+        
+    }
+    
+    
 
 }
 
@@ -96,6 +113,7 @@ extension RoomManager: @preconcurrency TimelineListener {
                 if let sivMessage = await item.generateSivMessage(previousMessage: previousMessage) {
                     
                     if let parentId = sivMessage.parentId {
+                        print("\"\(sivMessage.message)\" is a reply")
                         if updatedReplies[parentId] == nil {
                             updatedReplies[parentId] = [sivMessage]
                         } else {
@@ -218,6 +236,8 @@ struct SivMessage: Identifiable {
     let message: String
     let timestamp: Timestamp
     let parentId: String?
+    let avatarURL: String?
+    let senderName: String
 }
 
 extension StateEventType {
@@ -270,6 +290,7 @@ extension TimelineItem {
 
     func generateSivMessage(previousMessage: SivMessage? = nil) async -> SivMessage? {
         guard let event = asEvent() else { return nil }
+        
         return event.generateSivMessage(previousMessage: previousMessage)
     }
 }

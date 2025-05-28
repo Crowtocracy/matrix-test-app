@@ -49,6 +49,35 @@ import Combine
         }
     }
 
+    
+    func logout() async {
+        do {
+            try await client?.logout()
+            self.client = nil
+            self.clientDelegateTaskHandle = nil
+            self.syncService = nil
+            self.syncStateTaskHandle = nil
+            
+            self.roomListService = nil
+            roomListEntriesResult = nil
+            roomListEntriesResultTaskHandle = nil
+            
+            
+            stateUpdatesTaskHandle = nil
+            
+            cancellables = Set<AnyCancellable>()
+            
+            roomManagersDict = [:]
+            
+             rooms = []
+             rawRooms = []
+             emptyRooms = []
+        } catch {
+            print("Error logging out: \(error)")
+        }
+        
+    }
+    
     func getRoomManager(roomId: String) async -> RoomManager? {
         if let existing =  roomManagersDict[roomId] {
             return existing
@@ -326,8 +355,26 @@ extension EventTimelineItem {
         }
     }
     
+    func getParentMessageId() -> String? {
+        switch self.content {
+        case .msgLike(let content):
+            return content.inReplyTo?.eventId()
+        default: return nil
+        }
+
+    }
+    
     func generateSivMessage(previousMessage: SivMessage? = nil) -> SivMessage {
-        SivMessage(id: self.eventOrTransactionId.getIdString(), message: self.getMessage() ?? "", timestamp: self.timestamp, parentId: nil)
+        var newAvatar: String? = ""
+        var newName = ""
+        switch self.senderProfile {
+        case .ready(let displayName, _, let avatarUrl):
+            newAvatar = avatarUrl
+            newName = displayName?.nullableTrimmed ?? "?"
+        default:
+            break
+        }
+        return SivMessage(id: self.eventOrTransactionId.getIdString(), message: self.getMessage() ?? "", timestamp: self.timestamp, parentId: self.getParentMessageId(), avatarURL: newAvatar, senderName: newName)
     }
 }
 

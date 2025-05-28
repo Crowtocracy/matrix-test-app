@@ -22,14 +22,7 @@ struct RoomListCell: View {
     }
     var body: some View {
         HStack(alignment: .top, spacing: 15) {
-            if let avatarURL = room.avatarUrl {
-                KFImage(URL(string: avatarURL)!)
-                    .resizable()
-                    .sivAvatar()
-            } else {
-                Image(systemName: room.isDirect ? "person.circle" : "person.2.circle")
-                    .sivAvatarImage()
-            }
+            SivAvatar(avatarURL: basicRoom.avatarUrl, displayName: basicRoom.displayName.nullableTrimmed ?? basicRoom.id, avatarSize: .large)
             
             
             VStack(alignment: .leading) {

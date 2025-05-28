@@ -85,27 +85,37 @@ enum ButtonStyle {
 
 enum Typography {
     case labelSmall
+    case labelMedium, labelLarge
     case titleMedium
+    case titleLarge
     case bodyMedium
+    case bodyLarge
+    
     
     var size: CGFloat {
         switch self {
         case .labelSmall:
             12
-        case .titleMedium:
+        case .labelMedium:
+            14
+        case .titleMedium, .bodyLarge, .labelLarge:
             16
         case .bodyMedium:
             14
+        case .titleLarge:
+            22
         }
         
     }
     
     var weight: Font.Weight {
         switch self {
-        case .labelSmall, .bodyMedium:
+        case .labelSmall, .bodyMedium, .bodyLarge:
                 .regular
-        case .titleMedium:
+        case .titleMedium, .labelMedium, .labelLarge:
                 .semibold
+        case .titleLarge:
+                .heavy
         }
     }
 }
