@@ -86,7 +86,7 @@ enum ButtonStyle {
 enum Typography {
     case labelSmall
     case labelMedium, labelLarge
-    case titleMedium
+    case titleMedium, titleSmall
     case titleLarge
     case bodyMedium
     case bodyLarge
@@ -96,7 +96,7 @@ enum Typography {
         switch self {
         case .labelSmall:
             12
-        case .labelMedium:
+        case .labelMedium, .titleSmall:
             14
         case .titleMedium, .bodyLarge, .labelLarge:
             16
@@ -112,7 +112,7 @@ enum Typography {
         switch self {
         case .labelSmall, .bodyMedium, .bodyLarge:
                 .regular
-        case .titleMedium, .labelMedium, .labelLarge:
+        case .titleMedium, .labelMedium, .labelLarge, .titleSmall:
                 .semibold
         case .titleLarge:
                 .heavy

@@ -25,16 +25,22 @@ struct RoomListCell: View {
             SivAvatar(avatarURL: basicRoom.avatarUrl, displayName: basicRoom.displayName.nullableTrimmed ?? basicRoom.id, avatarSize: .large)
             
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 0) {
                 Text(room.displayName)
+                    .multilineTextAlignment(.leading)
                     .sivTypography(.titleMedium)
+                    .foregroundStyle(.sivGray)
+                Text(room.isDirect ? "Direct Message" : "Room")
+                    .sivTypography(.bodyMedium)
+                    .foregroundStyle(.sivGray2)
                 Spacer()
-                    .frame(height: 30)
+                    .frame(height: 10)
                 if roomListItem?.membership() == .invited {
                     inviteActions
                 } else {
                     Text(isEncrypted ? "🔒" : (message + " • " + time))
                         .sivTypography(.bodyMedium)
+                        .foregroundStyle(.sivGray2)
                 }
                  
             }

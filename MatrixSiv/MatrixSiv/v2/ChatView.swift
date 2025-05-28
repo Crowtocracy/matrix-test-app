@@ -52,11 +52,19 @@ struct ChatView: View {
                 if parentMessage == nil {
                     SivAvatar(avatarURL: basicRoom.avatarUrl?.nullableTrimmed, displayName: basicRoom.displayName.nullableTrimmed ?? basicRoom.id, avatarSize: .large)
                 }
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(parentMessage != nil ? "Replies" : basicRoom.displayName.nullableTrimmed ?? basicRoom.id)
+                        .sivTypography(room == nil ? .titleMedium : .titleSmall)
+                       .foregroundStyle(.sivPrimary)
+                       .multilineTextAlignment(.leading)
+                    if let room {
+                        Text(room.isDirect ? "Direct Message" : "Room")
+                            .sivTypography(.labelSmall)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.sivGray2)
+                    }
+                }
                 
-                Text(parentMessage != nil ? "Replies" : basicRoom.displayName.nullableTrimmed ?? basicRoom.id)
-                   .sivTypography(.titleMedium)
-                   .foregroundStyle(.sivPrimary)
-                   .multilineTextAlignment(.leading)
             }
              
             Spacer()
