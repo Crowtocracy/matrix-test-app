@@ -90,6 +90,7 @@ enum Typography {
     case titleLarge
     case bodyMedium
     case bodyLarge
+    case headlineSmall
     
     
     var size: CGFloat {
@@ -104,13 +105,15 @@ enum Typography {
             14
         case .titleLarge:
             22
+        case .headlineSmall:
+            24
         }
         
     }
     
     var weight: Font.Weight {
         switch self {
-        case .labelSmall, .bodyMedium, .bodyLarge:
+        case .labelSmall, .bodyMedium, .bodyLarge, .headlineSmall:
                 .regular
         case .titleMedium, .labelMedium, .labelLarge, .titleSmall:
                 .semibold

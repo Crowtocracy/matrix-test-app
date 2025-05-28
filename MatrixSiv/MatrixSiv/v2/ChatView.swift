@@ -21,6 +21,7 @@ struct ChatView: View {
     @State var roomManager: RoomManager?
     @State var actionMessage: SivMessage? = nil
     @State var parentMessage: SivMessage? = nil
+    @State var showMessageMenu: Bool = false
     var body: some View {
         VStack {
             header
@@ -28,8 +29,10 @@ struct ChatView: View {
             inputView
         }
         .navigationBarBackButtonHidden()
-        .sheet(item: $actionMessage) { _ in
-            MessageMenu(replyAction: replyAction)
+        .sheet(isPresented: $showMessageMenu, onDismiss: {
+            actionMessage = nil
+        }) {
+            MessageMenu(replyAction: replyAction, reactAction: reactAction)
                 .presentationDetents([.medium])
         }
         .task {
@@ -81,6 +84,16 @@ struct ChatView: View {
         .padding(.vertical, 17)
     }
     
+    func reactAction(_ emoji: String) {
+        guard let actionMessage else {
+            fatalError("Trying to react when action message is not set")
+        }
+        print("react \(emoji)")
+        Task {
+            await roomManager?.toggleReaction(reaction: emoji, eventId: actionMessage.id)
+            self.actionMessage = nil
+        }
+    }
     func replyAction() {
         print("reply to message")
         guard let actionMessage else {
@@ -97,7 +110,10 @@ struct ChatView: View {
                 
                 if let roomManager {
                     if let parentMessage {
-                        MessageCell(message: parentMessage)
+                        MessageCell(message: parentMessage, toggleReaction: {
+                            actionMessage = parentMessage
+                            reactAction($0)
+                        })
                         if let replies = roomManager.replyDict[parentMessage.id], !replies.isEmpty {
                             Text("\(replies.count) Replies")
                                 .sivTypography(.labelMedium)
@@ -109,7 +125,10 @@ struct ChatView: View {
                                 .padding(.vertical, 8)
                                 .padding(.horizontal, 20)
                             ForEach(replies, id: \.id) { message in
-                                MessageCell(message: message)
+                                MessageCell(message: message, toggleReaction: {
+                                    actionMessage = parentMessage
+                                    reactAction($0)
+                                })
                                     .onLongPressGesture {
                                         messageLongPressAction(message: message)
                                     }
@@ -118,7 +137,10 @@ struct ChatView: View {
                         
                     } else {
                         ForEach(roomManager.sivMessages, id: \.id) { message in
-                            MessageCell(message: message)
+                            MessageCell(message: message, toggleReaction: {
+                                actionMessage = message
+                                reactAction($0)
+                            })
                                 .onLongPressGesture {
                                     messageLongPressAction(message: message)
                                 }
@@ -176,6 +198,7 @@ struct ChatView: View {
     func messageLongPressAction(message: SivMessage) {
         print("message cell long press")
         actionMessage = message
+        showMessageMenu = true
     }
     func sendMessage() async {
         let message = draft
@@ -215,6 +238,7 @@ extension String {
 
 struct MessageCell: View {
     let message: SivMessage
+    let toggleReaction: (String) -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             senderView
@@ -249,9 +273,55 @@ struct MessageCell: View {
                     .sivTypography(.bodyLarge)
                 Spacer()
             }
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(.clear)
+                    .squareSize(30)
+                // foreach reactions
+                if !message.reactions.isEmpty {
+                    ForEach(message.reactions, id: \.key) { reaction in
+                        ReactionButton(reaction: reaction) {
+                            toggleReaction(reaction.key)
+                        }
+                    }
+                }
+                Spacer()
+            }
         }
         
         
+    }
+}
+
+struct ReactionButton: View {
+    let reaction: Reaction
+    let action: () -> Void
+    @State var isSelected: Bool = false
+    
+    var body: some View {
+        Button {
+            action()
+        } label: {
+            HStack(spacing: 8) {
+                Text(reaction.key)
+                    .sivTypography(.titleLarge)
+                Text(reaction.senders.count.description)
+                    .sivTypography(.titleMedium)
+                
+            }
+            .padding(.horizontal, 14)
+            .frame(height: 40)
+            .background {
+                Capsule()
+                    .fill(.sivGray4)
+                    .stroke(isSelected ? Color.sivPrimary : .clear, lineWidth: 1)
+            }
+        }
+        .task {
+            isSelected = reaction.senders.contains(where: {
+                MatrixManager.shared.isUserId(id: $0.senderId)
+            })
+        }
     }
 }
 
@@ -335,6 +405,8 @@ struct SivAvatar: View {
 
 struct MessageMenu: View {
     let replyAction: () -> Void
+    let reactAction: (String) -> Void
+    var basicEmojis: [String] = ["🙂", "👍", "🙏", "✨", "🌈", "🤩"]
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -345,12 +417,41 @@ struct MessageMenu: View {
                     .padding(.top, 10)
                 Spacer()
             }
+            
+            emojiSection
+            SivDivider()
             MessageMenuButton(label: "Reply", iconImage: Image(systemName: "message")) {
                 replyAction()
             }
             Spacer()
         }
         .frame(maxWidth: .infinity)
+    }
+    var emojiSection: some View {
+        HStack {
+            Spacer()
+            ForEach(basicEmojis, id: \.self) { emoji in
+                Button {
+                    reactAction(emoji)
+                } label: {
+                    Text(emoji)
+                        .sivTypography(.headlineSmall)
+                }
+                .squareSize(24)
+                
+                Spacer()
+            }
+            
+            Button {
+                print("additional reactions")
+            } label: {
+                Image(systemName: "face.smiling")
+                    .resizable()
+                    .squareSize(24)
+            }
+            Spacer()
+        }
+        .frame(height: 68)
     }
 }
 

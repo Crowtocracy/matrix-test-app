@@ -34,6 +34,12 @@ import Combine
     var rawRooms: [Room] = []
     var emptyRooms: [SivRoom] = []
     
+    func isUserId(id: String) -> Bool {
+        guard let userId = try? client?.userId() else {
+            return false
+        }
+        return userId == id
+    }
     func isLoggedIn() -> Bool {
         client != nil
     }
@@ -332,39 +338,43 @@ extension RoomListItem {
 
 extension EventTimelineItem {
     func getMessage() -> String? {
-        switch self.content {
-        case .msgLike(let content):
-            return content.getMessage()
-        case .callInvite:
-            return "Call Invite"
-        case .callNotify:
-            return "Call Notify"
-        case .roomMembership(let userId, let userDisplayName, let change, let reason):
-            return "\(userDisplayName ?? userId) \(change.debugDescription)"
-//        )
-//        case .profileChange(displayName: String?, prevDisplayName: String?, avatarUrl: String?, prevAvatarUrl: String?
-//        )
-//        case .state(stateKey: String, content: OtherState
-//        )
-//        case .failedToParseMessageLike(eventType: String, error: String
-//        )
-//        case .failedToParseState(eventType: String, stateKey: String, error: String
-//        )
-        default:
-            return nil
+            switch self.content {
+            case .msgLike(let content):
+                return content.getMessage()
+            case .callInvite:
+                return "Call Invite"
+            case .callNotify:
+                return "Call Notify"
+            case .roomMembership(let userId, let userDisplayName, let change, let reason):
+                return "\(userDisplayName ?? userId) \(change.debugDescription)"
+    //        )
+    //        case .profileChange(displayName: String?, prevDisplayName: String?, avatarUrl: String?, prevAvatarUrl: String?
+    //        )
+    //        case .state(stateKey: String, content: OtherState
+    //        )
+    //        case .failedToParseMessageLike(eventType: String, error: String
+    //        )
+    //        case .failedToParseState(eventType: String, stateKey: String, error: String
+    //        )
+            default:
+                return nil
+            }
         }
-    }
-    
-    func getParentMessageId() -> String? {
-        switch self.content {
-        case .msgLike(let content):
-            return content.inReplyTo?.eventId()
-        default: return nil
-        }
-
-    }
     
     func generateSivMessage(previousMessage: SivMessage? = nil) -> SivMessage {
+        var message: String? = nil
+        var reactions: [Reaction] = []
+        var parentId: String? = nil
+        
+        switch self.content {
+        case .msgLike(let content):
+            message = content.getMessage()
+            reactions = content.reactions
+            parentId = content.inReplyTo?.eventId()
+        default:
+            break
+        }
+        
         var newAvatar: String? = ""
         var newName = ""
         switch self.senderProfile {
@@ -374,7 +384,7 @@ extension EventTimelineItem {
         default:
             break
         }
-        return SivMessage(id: self.eventOrTransactionId.getIdString(), message: self.getMessage() ?? "", timestamp: self.timestamp, parentId: self.getParentMessageId(), avatarURL: newAvatar, senderName: newName)
+        return SivMessage(id: self.eventOrTransactionId.getIdString(), message: message ?? "", timestamp: self.timestamp, parentId: parentId, avatarURL: newAvatar, senderName: newName, reactions: reactions)
     }
 }
 

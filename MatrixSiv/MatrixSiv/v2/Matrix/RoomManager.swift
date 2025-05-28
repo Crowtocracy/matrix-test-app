@@ -83,6 +83,16 @@ class RoomManager: ObservableObject {
         backPaginationStatusTaskHandle = try await timeline.subscribeToBackPaginationStatus(listener: self)
     }
     
+    func toggleReaction(reaction: String, eventId: String) async {
+        do {
+            try await timeline?.toggleReaction(itemId: .eventId(eventId: eventId), key: reaction)
+            print("Reaction toggled successfully")
+        } catch {
+            print("Error toggling reaction \(error)")
+        }
+        
+    }
+    
     func sendPlainMessage(message: String, parentMessage: SivMessage?) async {
         do {
             let newEvent = messageEventContentFromMarkdown(md: message)
@@ -238,6 +248,7 @@ struct SivMessage: Identifiable {
     let parentId: String?
     let avatarURL: String?
     let senderName: String
+    let reactions: [Reaction]
 }
 
 extension StateEventType {
@@ -290,7 +301,6 @@ extension TimelineItem {
 
     func generateSivMessage(previousMessage: SivMessage? = nil) async -> SivMessage? {
         guard let event = asEvent() else { return nil }
-        
         return event.generateSivMessage(previousMessage: previousMessage)
     }
 }
