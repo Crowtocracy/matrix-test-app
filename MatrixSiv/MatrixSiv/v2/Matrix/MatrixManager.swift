@@ -117,9 +117,10 @@ import Combine
         roomListService = syncService?.roomListService()
         syncStateTaskHandle = syncService?.state(listener: self)
         let roomList = try await roomListService?.allRooms()
-        roomListEntriesResult = roomList?.entriesWithDynamicAdapters(pageSize: 1000, listener: self)
+        roomListEntriesResult = roomList?.entriesWithDynamicAdapters(pageSize: 20, listener: self)
         let stateUpdatesSubscriptionResult = try roomList?.loadingState(listener: self)
         stateUpdatesTaskHandle = stateUpdatesSubscriptionResult?.stateStream
+        
 //        roomListResult.publisher.sink { completion in
 //            print("Done getting rooms")
 //        } receiveValue: { roomlist in
@@ -177,6 +178,15 @@ import Combine
             }
             return rooms
         }
+        Task {
+            do {
+                try roomListService?.subscribeToRooms(roomIds: updatedRooms.map({ $0.id }))
+                print("successfully subscribed to rooms")
+            } catch {
+                print("unable to subscribe to rooms: \(error)")
+            }
+            
+        }
         
         return updatedRooms
     }
@@ -197,7 +207,7 @@ import Combine
     
     
 }
-extension MatrixManager: RoomListEntriesListener {
+extension MatrixManager: @preconcurrency RoomListEntriesListener {
     func onUpdate(roomEntriesUpdate: [MatrixRustSDK.RoomListEntriesUpdate]) {
         print("room entries updated")
     }
@@ -205,7 +215,7 @@ extension MatrixManager: RoomListEntriesListener {
     
 }
 
-extension MatrixManager: ClientDelegate {
+extension MatrixManager: @preconcurrency ClientDelegate {
     func didReceiveAuthError(isSoftLogout: Bool) {
         print("received auth error")
     }
@@ -215,14 +225,14 @@ extension MatrixManager: ClientDelegate {
     }
 
 }
-extension MatrixManager: SyncServiceStateObserver {
+extension MatrixManager: @preconcurrency SyncServiceStateObserver {
     func onUpdate(state: MatrixRustSDK.SyncServiceState) {
         print("Sync state updated: \(state)")
         rawRooms = client?.rooms() ?? []
     }
 }
 
-extension MatrixManager: RoomListLoadingStateListener {
+extension MatrixManager: @preconcurrency RoomListLoadingStateListener {
     func onUpdate(state: MatrixRustSDK.RoomListLoadingState) {
         print("RoomListLoadingState updated: \(state)")
     }

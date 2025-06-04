@@ -114,6 +114,7 @@ class RoomManager: ObservableObject {
 
 extension RoomManager: @preconcurrency TimelineListener {
     func onUpdate(diff: [MatrixRustSDK.TimelineDiff]) {
+        print("message updated")
         Task { @MainActor in
             updateItemsWithDiffs(diff)
             var updatedMessages = [SivMessage]()
@@ -123,7 +124,6 @@ extension RoomManager: @preconcurrency TimelineListener {
                 if let sivMessage = await item.generateSivMessage(previousMessage: previousMessage) {
                     
                     if let parentId = sivMessage.parentId {
-                        print("\"\(sivMessage.message)\" is a reply")
                         if updatedReplies[parentId] == nil {
                             updatedReplies[parentId] = [sivMessage]
                         } else {

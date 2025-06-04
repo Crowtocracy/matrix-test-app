@@ -10,15 +10,50 @@ import Kingfisher
 import MatrixRustSDK
 import Foundation
 
+struct ChatViewWrapper: View {
+    let basicRoom: SivRoom
+    @State var roomManager: RoomManager?
+    @State var roomListItem: RoomListItem?
+    @State var roomInfo: RoomInfo?
+    @State var room: SivRoom?
+    var body: some View {
+        VStack {
+            if let roomManager {
+                ChatView(basicRoom: basicRoom, roomManager: roomManager, room: room, roomListItem: roomListItem, roomInfo: roomInfo)
+            } else {
+                Text("Fetching roommanger...")
+            }
+        }
+        .task {
+            await loadData()
+        }
+        
+    }
+    func loadData() async {
+        do {
+            self.roomListItem = await MatrixManager.shared.getRoomListItem(roomId: basicRoom.id)
+            self.room = await roomListItem?.convertToSivRoom()
+            self.roomInfo = try await roomListItem?.roomInfo()
+            if let room, let roomInfo, let roomListItem {
+                roomManager = await MatrixManager.shared.getRoomManager(roomId: basicRoom.id)
+                try await roomManager?.setup()
+                try await roomManager?.paginateBackwards()
+            }
+        } catch {
+            print("Error loading data \(error)")
+        }
+        
+    }
+}
 
 struct ChatView: View {
     @Environment(\.dismiss) private var dismiss
     let basicRoom: SivRoom
+    @StateObject var roomManager: RoomManager
     @State var room: SivRoom?
     @State var draft: String = ""
     @State var roomListItem: RoomListItem?
     @State var roomInfo: RoomInfo?
-    @State var roomManager: RoomManager?
     @State var actionMessage: SivMessage? = nil
     @State var parentMessage: SivMessage? = nil
     @State var showMessageMenu: Bool = false
@@ -34,9 +69,6 @@ struct ChatView: View {
         }) {
             MessageMenu(replyAction: replyAction, reactAction: reactAction)
                 .presentationDetents([.medium])
-        }
-        .task {
-            await loadData()
         }
     }
     @ViewBuilder
@@ -90,7 +122,7 @@ struct ChatView: View {
         }
         print("react \(emoji)")
         Task {
-            await roomManager?.toggleReaction(reaction: emoji, eventId: actionMessage.id)
+            await roomManager.toggleReaction(reaction: emoji, eventId: actionMessage.id)
             self.actionMessage = nil
         }
     }
@@ -108,56 +140,53 @@ struct ChatView: View {
         ScrollView {
             VStack (alignment: .leading) {
                 
-                if let roomManager {
-                    if let parentMessage {
-                        MessageCell(message: parentMessage, toggleReaction: {
-                            actionMessage = parentMessage
-                            reactAction($0)
-                        })
-                        if let replies = roomManager.replyDict[parentMessage.id], !replies.isEmpty {
-                            Text("\(replies.count) Replies")
-                                .sivTypography(.labelMedium)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.sivGray2)
-                                .padding(.top, 21)
-                                .padding(.horizontal, 25)
-                            SivDivider()
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 20)
-                            ForEach(replies, id: \.id) { message in
-                                MessageCell(message: message, toggleReaction: {
-                                    actionMessage = parentMessage
-                                    reactAction($0)
-                                })
-                                    .onLongPressGesture {
-                                        messageLongPressAction(message: message)
-                                    }
-                            }
-                        }
-                        
-                    } else {
-                        ForEach(roomManager.sivMessages, id: \.id) { message in
+                if let parentMessage {
+                    MessageCell(message: parentMessage, toggleReaction: {
+                        actionMessage = parentMessage
+                        reactAction($0)
+                    })
+                    if let replies = roomManager.replyDict[parentMessage.id], !replies.isEmpty {
+                        Text("\(replies.count) Replies")
+                            .sivTypography(.labelMedium)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.sivGray2)
+                            .padding(.top, 21)
+                            .padding(.horizontal, 25)
+                        SivDivider()
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 20)
+                        ForEach(replies, id: \.id) { message in
                             MessageCell(message: message, toggleReaction: {
-                                actionMessage = message
+                                actionMessage = parentMessage
                                 reactAction($0)
                             })
                                 .onLongPressGesture {
                                     messageLongPressAction(message: message)
                                 }
-                            if let replies = roomManager.replyDict[message.id], !replies.isEmpty {
-                                Button {
-                                    parentMessage = message
-                                } label: {
-                                    Text("\(replies.count) Replies")
-                                        .sivTypography(.labelMedium)
-                                        .foregroundStyle(.sivPrimary)
-                                }
-                                .padding(.leading, 61)
-                            }
-                            
                         }
                     }
                     
+                } else {
+                    ForEach(roomManager.sivMessages, id: \.id) { message in
+                        MessageCell(message: message, toggleReaction: {
+                            actionMessage = message
+                            reactAction($0)
+                        })
+                            .onLongPressGesture {
+                                messageLongPressAction(message: message)
+                            }
+                        if let replies = roomManager.replyDict[message.id], !replies.isEmpty {
+                            Button {
+                                parentMessage = message
+                            } label: {
+                                Text("\(replies.count) Replies")
+                                    .sivTypography(.labelMedium)
+                                    .foregroundStyle(.sivPrimary)
+                            }
+                            .padding(.leading, 61)
+                        }
+                        
+                    }
                 }
                 Spacer()
             }
@@ -203,27 +232,11 @@ struct ChatView: View {
     func sendMessage() async {
         let message = draft
         draft = ""
-        await roomManager?.sendPlainMessage(message: message, parentMessage: parentMessage)
+        await roomManager.sendPlainMessage(message: message, parentMessage: parentMessage)
         
     }
     func infoAction() {
         print("Info button tapped")
-    }
-    
-    func loadData() async {
-        do {
-            self.roomListItem = await MatrixManager.shared.getRoomListItem(roomId: basicRoom.id)
-            self.room = await roomListItem?.convertToSivRoom()
-            self.roomInfo = try await roomListItem?.roomInfo()
-            if let room, let roomInfo, let roomListItem {
-                roomManager = await MatrixManager.shared.getRoomManager(roomId: basicRoom.id)
-                try await roomManager?.setup()
-                try await roomManager?.paginateBackwards()
-            }
-        } catch {
-            print("Error loading data \(error)")
-        }
-        
     }
 }
 

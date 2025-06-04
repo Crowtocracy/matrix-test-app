@@ -126,7 +126,7 @@ struct RoomListView: View {
         VStack (spacing: 0) {
             ForEach(MatrixManager.shared.rawRooms.compactMap({ $0.membership() == .joined ? $0.convertToBasicSivRoom() : nil }), id: \.id) { room in
                 NavigationLink {
-                    ChatView(basicRoom: room)
+                    ChatViewWrapper(basicRoom: room)
                 } label: {
                     RoomListCell(basicRoom: room)
                 }
