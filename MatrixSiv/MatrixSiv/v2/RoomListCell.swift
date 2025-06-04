@@ -16,6 +16,7 @@ struct RoomListCell: View {
     @State var time: String = ""
     @State var roomListItem: RoomListItem? = nil
     @State var isEncrypted: Bool = false
+//    @State var isMarkedUnread: Bool = true
     init(basicRoom: SivRoom) {
         self.basicRoom = basicRoom
         self.room = basicRoom
@@ -49,11 +50,14 @@ struct RoomListCell: View {
         .frame(maxWidth: .infinity)
         .padding(10)
         .overlay(alignment: .topTrailing, content: {
-            Circle()
-                .fill(.orange)
-                .squareSize(8)
-                .padding(.top, 14)
-                .padding(.trailing, 8)
+            if room.isMarkedUnread {
+                Circle()
+                    .fill(.orange)
+                    .squareSize(8)
+                    .padding(.top, 14)
+                    .padding(.trailing, 8)
+            }
+            
         })
         .task {
             await loadData()
@@ -96,6 +100,7 @@ struct RoomListCell: View {
               message = "You have been invited to join this room"
           }
           let lastEvent = await roomListItem.latestEvent()
+            
           message = lastEvent?.getMessage() ?? ""
           time = lastEvent?.timestamp.description ?? ""
             isEncrypted = await roomListItem.isEncrypted()

@@ -267,7 +267,7 @@ struct MessageCell: View {
             
             Text(message.senderName)
                 .sivTypography(.titleMedium)
-            Text("9:32 am")
+            Text(message.time)
                 .sivTypography(.labelSmall)
                 .foregroundStyle(.sivGray3)
             Spacer()

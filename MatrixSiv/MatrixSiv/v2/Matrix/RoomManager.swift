@@ -249,6 +249,36 @@ struct SivMessage: Identifiable {
     let avatarURL: String?
     let senderName: String
     let reactions: [Reaction]
+    
+    var time: String {
+        
+        let date = Date(timeIntervalSince1970: TimeInterval(timestamp) / 1000)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "hh:mm a"
+        return dateFormatter.string(from: date)
+            
+    }
+    
+    var date: String {
+        let date = Date(timeIntervalSince1970: TimeInterval(timestamp) / 1000)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM "
+        let formattedDate = dateFormatter.string(from: date)
+        // Add ordinal suffix
+                let day = Calendar.current.component(.day, from: date)
+                let suffix = day.ordinalSuffix
+                
+                return formattedDate + suffix
+    }
+    
+}
+
+extension Int {
+    var ordinalSuffix: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .ordinal
+        return formatter.string(from: NSNumber(integerLiteral: self)) ?? ""
+    }
 }
 
 extension StateEventType {

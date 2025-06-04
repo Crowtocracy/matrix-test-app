@@ -289,6 +289,7 @@ struct SivRoom: Identifiable {
     let membersCount: Int
     var membership: Membership = .invited
     let isEmpty: Bool = false
+    var isMarkedUnread = true
     
 //    init(room: Room) {
 //        self.id = room.id()
@@ -334,6 +335,15 @@ extension RoomListItem {
     func convertToSivRoom() async -> SivRoom {
         let isDirect = await self.isDirect()
         let room = try?  self.fullRoom()
+        var isMarkedUnread: Bool = true
+        
+        do {
+            let roomInfo = try await self.roomInfo()
+            isMarkedUnread = roomInfo.isMarkedUnread
+            print("room \(self.displayName() ?? "nine"): \(isMarkedUnread)")
+        } catch {
+            print("unable to retrieve roominfo")
+        }
         return SivRoom(
             id: self.id(),
             avatarUrl: self.avatarUrl(),
@@ -341,7 +351,8 @@ extension RoomListItem {
             isDirect: isDirect,
             room: room,
             membersCount: 0,
-            membership: self.membership()
+            membership: self.membership(),
+            isMarkedUnread: isMarkedUnread
         )
     }
 }
