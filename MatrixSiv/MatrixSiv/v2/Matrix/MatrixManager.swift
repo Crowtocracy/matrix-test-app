@@ -22,6 +22,7 @@ import Combine
     
     private var roomListEntriesResult: RoomListEntriesWithDynamicAdaptersResult? = nil
     private var roomListEntriesResultTaskHandle: TaskHandle? = nil
+    private var roomListEntriesResultEntriesStream: TaskHandle? = nil
     
     
     private var stateUpdatesTaskHandle: TaskHandle? = nil
@@ -33,6 +34,19 @@ import Combine
     var rooms: [SivRoom] = []
     var rawRooms: [Room] = []
     var emptyRooms: [SivRoom] = []
+    
+    var rawRoomListItems: [RoomListItem] = []
+    var roomUpdateToggle: Bool = false
+    
+//    private let diffsPublisher = PassthroughSubject<[RoomListEntriesUpdate], Never>()
+    init() {
+//        diffsPublisher
+//        .receive(on: DispatchQueue.main)
+//        .sink {
+//            print("rooms updated \($0.count)")
+//        }
+//        .store(in: &cancellables)
+    }
     
     func isUserId(id: String) -> Bool {
         guard let userId = try? client?.userId() else {
@@ -118,6 +132,8 @@ import Combine
         syncStateTaskHandle = syncService?.state(listener: self)
         let roomList = try await roomListService?.allRooms()
         roomListEntriesResult = roomList?.entriesWithDynamicAdapters(pageSize: 20, listener: self)
+        _ = roomListEntriesResult?.controller().setFilter(kind: .unread)
+        roomListEntriesResultEntriesStream = roomListEntriesResult?.entriesStream()
         let stateUpdatesSubscriptionResult = try roomList?.loadingState(listener: self)
         stateUpdatesTaskHandle = stateUpdatesSubscriptionResult?.stateStream
         
@@ -209,9 +225,65 @@ import Combine
 }
 extension MatrixManager: @preconcurrency RoomListEntriesListener {
     func onUpdate(roomEntriesUpdate: [MatrixRustSDK.RoomListEntriesUpdate]) {
-        print("room entries updated")
+        print("roomEntriesUpdate \(Date.now.timeIntervalSince1970)")
+        var updatedRooms: [RoomListItem] = rawRoomListItems
+        var changes = [CollectionDifference<MatrixRustSDK.RoomListItem>.Change]()
+        for update in roomEntriesUpdate {
+            switch update {
+            case .append(let values):
+//                updatedRooms.append(contentsOf: values)
+                for (index, item) in values.enumerated() {
+                    changes.append(.insert(offset: updatedRooms.count + index, element: item, associatedWith: nil))
+                }
+                
+            case .clear:
+//                updatedRooms = []
+                for (index, item) in updatedRooms.enumerated() {
+                    changes.append(.remove(offset: index, element: item, associatedWith: nil))
+                }
+            case .pushFront(let value):
+//                updatedRooms.insert(value, at: 0)
+                changes.append(.insert(offset: 0, element: value, associatedWith: nil))
+            case .pushBack(let value):
+//                updatedRooms.append(value)
+                changes.append(.insert(offset: updatedRooms.count, element: value, associatedWith: nil))
+            case .insert(let index, let value):
+//                updatedRooms.insert(value, at: Int(index))
+                changes.append(.insert(offset: Int(index), element: value, associatedWith: nil))
+            case .set(let index, let value):
+//                updatedRooms[Int(index)] = value
+                changes.append(.remove(offset: Int(index), element: value, associatedWith: nil))
+                changes.append(.insert(offset: Int(index), element: value, associatedWith: nil))
+            case .remove(let index):
+//                updatedRooms.remove(at: Int(index))
+                changes.append(.remove(offset: Int(index), element: updatedRooms[Int(index)], associatedWith: nil))
+            case .truncate(_):
+                break
+            case .reset(let values):
+//                updatedRooms = values
+                for (index, item) in updatedRooms.enumerated() {
+                    changes.append(.remove(offset: index, element: item, associatedWith: nil))
+                }
+
+                for (index, item) in values.enumerated() {
+                    changes.append(.insert(offset: index, element: item, associatedWith: nil))
+                }
+            default:
+                break
+            }
+        }
+        let diff = CollectionDifference(changes)
+        if let diff {
+            updatedRooms = updatedRooms.applying(diff) ?? []
+        } else {
+            print("🔴 Failed to apply diff")
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.roomUpdateToggle.toggle()
+            self?.rawRoomListItems = updatedRooms
+        }
     }
-    
     
 }
 
@@ -349,6 +421,29 @@ extension RoomListItem {
             avatarUrl: self.avatarUrl(),
             displayName: self.displayName() ?? "",
             isDirect: isDirect,
+            room: room,
+            membersCount: 0,
+            membership: self.membership(),
+            isMarkedUnread: isMarkedUnread
+        )
+    }
+    
+    func convertToBasicSivRoom() -> SivRoom {
+//        let isDirect = await self.isDirect()
+        let room = try?  self.fullRoom()
+        var isMarkedUnread: Bool = true
+//        do {
+//            let roomInfo = try await self.roomInfo()
+//            isMarkedUnread = roomInfo.isMarkedUnread
+//            print("room \(self.displayName() ?? "nine"): \(isMarkedUnread)")
+//        } catch {
+//            print("unable to retrieve roominfo")
+//        }
+        return SivRoom(
+            id: self.id(),
+            avatarUrl: self.avatarUrl(),
+            displayName: self.displayName() ?? "",
+            isDirect: false,
             room: room,
             membersCount: 0,
             membership: self.membership(),

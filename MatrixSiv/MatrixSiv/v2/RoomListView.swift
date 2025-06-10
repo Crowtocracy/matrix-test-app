@@ -113,8 +113,8 @@ struct RoomListView: View {
     }
     var invites: some View {
         VStack {
-            ForEach(MatrixManager.shared.rawRooms.compactMap({ $0.membership() == .invited ? $0.convertToBasicSivRoom() : nil }), id: \.id) { room in
-                RoomListCell(basicRoom: room)
+            ForEach(MatrixManager.shared.rawRoomListItems.compactMap({ $0.membership() == .invited ? $0.convertToBasicSivRoom() : nil }), id: \.id) { room in
+                RoomListCell(basicRoom: room, roomUpdateToggle: MatrixManager.shared.roomUpdateToggle)
                 customDivider
             }
             Spacer()
@@ -128,7 +128,7 @@ struct RoomListView: View {
                 NavigationLink {
                     ChatViewWrapper(basicRoom: room)
                 } label: {
-                    RoomListCell(basicRoom: room)
+                    RoomListCell(basicRoom: room, roomUpdateToggle: MatrixManager.shared.roomUpdateToggle)
                 }
                 customDivider
 

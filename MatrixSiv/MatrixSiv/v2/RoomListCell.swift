@@ -11,15 +11,17 @@ import Kingfisher
 
 struct RoomListCell: View {
     let basicRoom: SivRoom
+    let roomUpdateToggle: Bool
     @State var room: SivRoom
     @State var message: String = "Message placeholder"
     @State var time: String = ""
     @State var roomListItem: RoomListItem? = nil
     @State var isEncrypted: Bool = false
 //    @State var isMarkedUnread: Bool = true
-    init(basicRoom: SivRoom) {
+    init(basicRoom: SivRoom, roomUpdateToggle: Bool) {
         self.basicRoom = basicRoom
         self.room = basicRoom
+        self.roomUpdateToggle = roomUpdateToggle
     }
     var body: some View {
         HStack(alignment: .top, spacing: 15) {
@@ -59,10 +61,22 @@ struct RoomListCell: View {
             }
             
         })
+        .task(id: MatrixManager.shared.roomUpdateToggle) {
+            if basicRoom.id == "!VmUnUtrWGBVulxrgos:matrix.org" {
+                print("🌱 Room Update toggle")
+            }
+            await loadData()
+        }
         .task {
+            if basicRoom.id == "!VmUnUtrWGBVulxrgos:matrix.org" {
+                print("🌱 Task")
+            }
             await loadData()
         }
         .onAppear {
+            if basicRoom.id == "!VmUnUtrWGBVulxrgos:matrix.org" {
+                print("🌱 onAppear")
+            }
             print("\(room.id) Avatar url \(room.avatarUrl ?? "none")")
         }
     }
