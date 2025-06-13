@@ -8,6 +8,7 @@
 import Foundation
 import MatrixRustSDK
 import Combine
+import UIKit
 
 @MainActor @Observable final class MatrixManager {
     static let shared: MatrixManager = MatrixManager()
@@ -38,14 +39,7 @@ import Combine
     var rawRoomListItems: [RoomListItem] = []
     var roomUpdateToggle: Bool = false
     
-//    private let diffsPublisher = PassthroughSubject<[RoomListEntriesUpdate], Never>()
     init() {
-//        diffsPublisher
-//        .receive(on: DispatchQueue.main)
-//        .sink {
-//            print("rooms updated \($0.count)")
-//        }
-//        .store(in: &cancellables)
     }
     
     func isUserId(id: String) -> Bool {
@@ -98,6 +92,16 @@ import Combine
         
     }
     
+    func getData(avatar: String) async -> UIImage? {
+        do {
+            let data = try await client?.getMediaContent(mediaSource: .fromUrl(url: avatar))
+            let uiimage = UIImage(data: data!)
+            return uiimage
+        } catch {
+            print("error getting avatar \(error)")
+            return nil
+        }
+    }
     func getRoomManager(roomId: String) async -> RoomManager? {
         if let existing =  roomManagersDict[roomId] {
             return existing
@@ -137,20 +141,14 @@ import Combine
         let stateUpdatesSubscriptionResult = try roomList?.loadingState(listener: self)
         stateUpdatesTaskHandle = stateUpdatesSubscriptionResult?.stateStream
         
-//        roomListResult.publisher.sink { completion in
-//            print("Done getting rooms")
-//        } receiveValue: { roomlist in
-//            print("rooms updated")
-//        }
-//        .store(in: &cancellables)
         await client?.enableAllSendQueues(enable: true)
         
         try await Task.sleep(for: .seconds(3))
         
-//        let rooms = try await roomListService?.allRooms()
         await refreshRooms()
         
     }
+    
     
     func joinRoom(roomId: String) async -> Room? {
         guard let client = client else {
@@ -163,8 +161,46 @@ import Combine
             return nil
             
         }
-        
-        
+    }
+    
+    func getOrCreateDMRoom(userId: String) async -> Room? {
+        do {
+            // check if there's already a dm with the user
+            let room = try  self.client?.getDmRoom(userId: userId)
+            if let room {
+                return room
+            }
+            let roomId = try await self.client!.createRoom(request: .init(name: nil, isEncrypted: false, isDirect: true, visibility: .private, preset: .trustedPrivateChat, invite: [userId]))
+            return try self.client!.getDmRoom(userId: userId)
+        } catch {
+            print("Error getting DM room \(error)")
+        }
+        return nil
+    }
+    
+    func createDM(userId: String, initialMessage: String) async -> RoomManager? {
+        let room = await getOrCreateDMRoom(userId: userId)
+        guard let room else { return nil }
+        let roomManager = await getRoomManager(roomId: room.id())
+        if let message = initialMessage.nullableTrimmed {
+            await roomManager?.sendPlainMessage(message: message, parentMessage: nil)
+        }
+        return roomManager
+    }
+    
+    func createRoom(roomName: String, topic: String?, userIds: [String], initialMessage: String) async -> RoomManager? {
+        do {
+            let roomId = try await MatrixManager.shared.client?.createRoom(request: .init(name: roomName, topic: topic, isEncrypted: false, visibility: .private, preset: .privateChat, invite: userIds))
+            guard let roomId else { return nil }
+            let roomManager = await getRoomManager(roomId: roomId)
+            if let message = initialMessage.nullableTrimmed {
+                await roomManager?.sendPlainMessage(message: message, parentMessage: nil)
+            }
+            return roomManager
+        } catch {
+            print("Error creating room: \(error)")
+            return nil
+        }
     }
     func refreshRooms() async -> [SivRoom]{
         // filter to show joined rooms only
@@ -225,46 +261,35 @@ import Combine
 }
 extension MatrixManager: @preconcurrency RoomListEntriesListener {
     func onUpdate(roomEntriesUpdate: [MatrixRustSDK.RoomListEntriesUpdate]) {
-        print("roomEntriesUpdate \(Date.now.timeIntervalSince1970)")
         var updatedRooms: [RoomListItem] = rawRoomListItems
         var changes = [CollectionDifference<MatrixRustSDK.RoomListItem>.Change]()
         for update in roomEntriesUpdate {
             switch update {
             case .append(let values):
-//                updatedRooms.append(contentsOf: values)
                 for (index, item) in values.enumerated() {
                     changes.append(.insert(offset: updatedRooms.count + index, element: item, associatedWith: nil))
                 }
-                
             case .clear:
-//                updatedRooms = []
                 for (index, item) in updatedRooms.enumerated() {
                     changes.append(.remove(offset: index, element: item, associatedWith: nil))
                 }
             case .pushFront(let value):
-//                updatedRooms.insert(value, at: 0)
                 changes.append(.insert(offset: 0, element: value, associatedWith: nil))
             case .pushBack(let value):
-//                updatedRooms.append(value)
                 changes.append(.insert(offset: updatedRooms.count, element: value, associatedWith: nil))
             case .insert(let index, let value):
-//                updatedRooms.insert(value, at: Int(index))
                 changes.append(.insert(offset: Int(index), element: value, associatedWith: nil))
             case .set(let index, let value):
-//                updatedRooms[Int(index)] = value
                 changes.append(.remove(offset: Int(index), element: value, associatedWith: nil))
                 changes.append(.insert(offset: Int(index), element: value, associatedWith: nil))
             case .remove(let index):
-//                updatedRooms.remove(at: Int(index))
                 changes.append(.remove(offset: Int(index), element: updatedRooms[Int(index)], associatedWith: nil))
             case .truncate(_):
                 break
             case .reset(let values):
-//                updatedRooms = values
                 for (index, item) in updatedRooms.enumerated() {
                     changes.append(.remove(offset: index, element: item, associatedWith: nil))
                 }
-
                 for (index, item) in values.enumerated() {
                     changes.append(.insert(offset: index, element: item, associatedWith: nil))
                 }
@@ -412,7 +437,6 @@ extension RoomListItem {
         do {
             let roomInfo = try await self.roomInfo()
             isMarkedUnread = roomInfo.isMarkedUnread
-            print("room \(self.displayName() ?? "nine"): \(isMarkedUnread)")
         } catch {
             print("unable to retrieve roominfo")
         }
@@ -432,13 +456,6 @@ extension RoomListItem {
 //        let isDirect = await self.isDirect()
         let room = try?  self.fullRoom()
         var isMarkedUnread: Bool = true
-//        do {
-//            let roomInfo = try await self.roomInfo()
-//            isMarkedUnread = roomInfo.isMarkedUnread
-//            print("room \(self.displayName() ?? "nine"): \(isMarkedUnread)")
-//        } catch {
-//            print("unable to retrieve roominfo")
-//        }
         return SivRoom(
             id: self.id(),
             avatarUrl: self.avatarUrl(),

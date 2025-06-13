@@ -36,10 +36,10 @@ class RoomManager: ObservableObject {
     @Published var timelineChange = false
 
     init(sivRoom: SivRoom, roomListItem: RoomListItem, roomInfo: RoomInfo) {
-        // TODO: create a cache? in MatrixManager
         self.sivRoom = sivRoom
         self.roomListItem = roomListItem
         self.roomInfo = roomInfo
+        print("avatar \(sivRoom.id): \(sivRoom.avatarUrl ?? "nil")")
     }
 
     func setup() async throws {

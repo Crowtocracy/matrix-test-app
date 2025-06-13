@@ -31,13 +31,14 @@ struct ChatViewWrapper: View {
     }
     func loadData() async {
         do {
-            self.roomListItem = await MatrixManager.shared.getRoomListItem(roomId: basicRoom.id)
-            self.room = await roomListItem?.convertToSivRoom()
-            self.roomInfo = try await roomListItem?.roomInfo()
-            if let room, let roomInfo, let roomListItem {
-                roomManager = await MatrixManager.shared.getRoomManager(roomId: basicRoom.id)
-                try await roomManager?.setup()
-                try await roomManager?.paginateBackwards()
+            let roomManager = await MatrixManager.shared.getRoomManager(roomId: basicRoom.id)
+            if let roomManager {
+                self.roomListItem = roomManager.roomListItem
+                self.room = roomManager.sivRoom
+                self.roomInfo = roomManager.roomInfo
+                self.roomManager = roomManager
+                try await self.roomManager?.setup()
+                try await self.roomManager?.paginateBackwards()
             }
         } catch {
             print("Error loading data \(error)")
@@ -365,24 +366,42 @@ struct SivAvatar: View {
     var avatarSize: AvatarSize = .regular
     var isRoom: Bool = false
     @State var showPlaceholder: Bool = false
+    @State var uiimage: UIImage? = nil
     var body: some View {
-        if showPlaceholder || avatarURL == nil {
-            Circle()
-                .fill(.teal)
-                .squareSize(avatarSize.rawValue)
-                .overlay {
-                    Text(generateInitials())
-                        .sivTypography(avatarSize.typography)
-                        .foregroundStyle(.white)
-                }
-        } else if let avatarURL {
-            KFImage(URL(string: avatarURL))
-                .onFailure { _ in
-                    showPlaceholder = true
-                }
-                .resizable()
-                .squareSize(avatarSize.rawValue)
+        ZStack {
+            if showPlaceholder || avatarURL == nil {
+                Circle()
+                    .fill(.teal)
+                    .squareSize(avatarSize.rawValue)
+                    .overlay {
+                        Text(generateInitials())
+                            .sivTypography(avatarSize.typography)
+                            .foregroundStyle(.white)
+                    }
+            } else if let avatarURL {
+                KFImage(URL(string: avatarURL))
+                    .onFailure { _ in
+                        showPlaceholder = true
+                    }
+                    .resizable()
+                    .squareSize(avatarSize.rawValue)
+            }
+            if let uiimage {
+                Image(uiImage: uiimage)
+                    .resizable()
+                    .scaledToFill()
+                    .squareSize(avatarSize.rawValue)
+                    .clipShape(Circle())
+            }
+            
         }
+        .task {
+            if let avatarURL {
+                uiimage = await MatrixManager.shared.getData(avatar: avatarURL)
+            }
+            
+        }
+       
         
         
     }

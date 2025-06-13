@@ -12,6 +12,8 @@ struct RoomListView: View {
     @State var membership: Membership = .joined
     @State var rooms: [SivRoom] = []
     @State var showMenu: Bool = false
+    @State var showCreateView: Bool = false
+    @State var newRoom: SivRoom? = nil
     var body: some View {
         NavigationStack {
             header
@@ -27,8 +29,33 @@ struct RoomListView: View {
                     
                 }
             }
+            .overlay(alignment: .bottomTrailing) {
+                Button {
+                    showCreateView = true
+                } label: {
+                    Circle()
+                        .fill(Color.accent)
+                        .squareSize(62)
+                        .overlay {
+                            Image(systemName: "plus")
+                                .resizable()
+                                .fontWeight(.medium)
+                                .foregroundStyle(.white)
+                                .squareSize(20)
+                        }
+                    
+                }
+                .contentShape(Circle())
+                .padding(20)
+            }
+            .sheet(isPresented: $showCreateView, content: {
+                CreateView(newRoom: $newRoom)
+            })
             .fullScreenCover(isPresented: $showMenu) {
                 MenuView()
+            }
+            .fullScreenCover(item: $newRoom) { room in
+                ChatViewWrapper(basicRoom: room)
             }
         }
         
@@ -184,8 +211,18 @@ struct SivDivider: View {
 }
 
 struct MenuView: View {
+    @Environment(\.dismiss) private var dismiss
+    
     var body: some View {
         VStack (alignment: .leading) {
+            header
+            Divider()
+            content
+        }
+    }
+    
+    var content: some View {
+        VStack {
             Button {
                 Task {
                     await logout()
@@ -195,6 +232,23 @@ struct MenuView: View {
             }
             Spacer()
         }
+        .padding(.horizontal, 20)
+    }
+    
+    var header: some View {
+        HStack {
+            Spacer()
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .fontWeight(.semibold)
+                    .squareSize(20)
+                    .padding(2)
+                    .foregroundStyle(.sivPrimary)
+            }
+        }
+        .padding(.horizontal, 16)
     }
     
     func logout() async {

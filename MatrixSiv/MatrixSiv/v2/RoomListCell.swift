@@ -62,22 +62,10 @@ struct RoomListCell: View {
             
         })
         .task(id: MatrixManager.shared.roomUpdateToggle) {
-            if basicRoom.id == "!VmUnUtrWGBVulxrgos:matrix.org" {
-                print("🌱 Room Update toggle")
-            }
             await loadData()
         }
         .task {
-            if basicRoom.id == "!VmUnUtrWGBVulxrgos:matrix.org" {
-                print("🌱 Task")
-            }
             await loadData()
-        }
-        .onAppear {
-            if basicRoom.id == "!VmUnUtrWGBVulxrgos:matrix.org" {
-                print("🌱 onAppear")
-            }
-            print("\(room.id) Avatar url \(room.avatarUrl ?? "none")")
         }
     }
     
