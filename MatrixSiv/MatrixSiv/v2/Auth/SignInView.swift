@@ -10,14 +10,19 @@ import MatrixRustSDK
 
 
 struct SignInView: View {
-    @State var homeserver: String = "matrix.org"
+    @State var homeserver: String = AppConstants.homeserver
     @State var username: String = ""
     @State var password: String = ""
+    @State var errorMessage: String? = nil
     var body: some View {
         VStack {
             TextField("Homeserver", text: $homeserver)
+                .keyboardType(.URL)
+                .autocapitalization(.none)
             TextField("Username", text: $username)
+                .autocapitalization(.none)
             SecureField("Password", text: $password)
+                .autocapitalization(.none)
             Button {
                 login()
             } label: {

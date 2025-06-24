@@ -8,6 +8,7 @@
 import Foundation
 import MatrixRustSDK
 
+/// RoomManager handles everything related to the room
 @MainActor
 class RoomManager: ObservableObject {
     let sivRoom: SivRoom

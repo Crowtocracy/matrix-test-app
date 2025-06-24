@@ -66,6 +66,7 @@ import UIKit
     
     func logout() async {
         do {
+            Session.clearUserDefaults()
             try await client?.logout()
             self.client = nil
             self.clientDelegateTaskHandle = nil
@@ -102,6 +103,11 @@ import UIKit
             return nil
         }
     }
+    
+    /// - checks roomManagersDict if there's an existing RoomManager for the roomId
+    /// - returns RoomManager from roomManagersDict if it exists so we don't have to create another instance for that roomId
+    /// - creates a new RoomManager and calls setup() to initialize the timeline
+    /// - returns the new RoomManager
     func getRoomManager(roomId: String) async -> RoomManager? {
         if let existing =  roomManagersDict[roomId] {
             return existing
@@ -145,7 +151,7 @@ import UIKit
         
         try await Task.sleep(for: .seconds(3))
         
-        await refreshRooms()
+        _ = await refreshRooms()
         
     }
     
@@ -163,14 +169,18 @@ import UIKit
         }
     }
     
+    /// - checks if there is a DM room between current user and the recepient user
+    /// - returns existing DM room
+    /// - if unavailable, create a new DM room
+    /// - returns new DM room
     func getOrCreateDMRoom(userId: String) async -> Room? {
         do {
-            // check if there's already a dm with the user
             let room = try  self.client?.getDmRoom(userId: userId)
             if let room {
                 return room
             }
-            let roomId = try await self.client!.createRoom(request: .init(name: nil, isEncrypted: false, isDirect: true, visibility: .private, preset: .trustedPrivateChat, invite: [userId]))
+            
+            let _ = try await self.client!.createRoom(request: .init(name: nil, isEncrypted: false, isDirect: true, visibility: .private, preset: .trustedPrivateChat, invite: [userId]))
             return try self.client!.getDmRoom(userId: userId)
         } catch {
             print("Error getting DM room \(error)")
@@ -178,9 +188,12 @@ import UIKit
         return nil
     }
     
+    /// sends initialMessage to the DM room
+    /// - returns the RommManager for the DM room
     func createDM(userId: String, initialMessage: String) async -> RoomManager? {
         let room = await getOrCreateDMRoom(userId: userId)
         guard let room else { return nil }
+        /// get RoomManager so we can send messages
         let roomManager = await getRoomManager(roomId: room.id())
         if let message = initialMessage.nullableTrimmed {
             await roomManager?.sendPlainMessage(message: message, parentMessage: nil)
@@ -188,6 +201,8 @@ import UIKit
         return roomManager
     }
     
+    /// - creates a new Room and invites the given userIds to join
+    /// - returns the RoomManager for the new room
     func createRoom(roomName: String, topic: String?, userIds: [String], initialMessage: String) async -> RoomManager? {
         do {
             let roomId = try await MatrixManager.shared.client?.createRoom(request: .init(name: roomName, topic: topic, isEncrypted: false, visibility: .private, preset: .privateChat, invite: userIds))
@@ -213,11 +228,12 @@ import UIKit
     
     func getRooms() async -> [SivRoom]  {
         
-       
+        /// clent.rooms is populated over time in the background by MatrixSDK
         let rawRooms = client?.rooms() ?? []
         print("raw rooms: \(rawRooms.count)")
+
+        // convert rooms to an identifiable struct since SwiftUI ForEach can't iterate throgh [Room]
         let updatedRooms = await withTaskGroup(of:SivRoom.self , returning: [SivRoom].self) { group in
-            
             for room in rawRooms {
                 group.addTask {
                     await room.convertToSivRoom()
@@ -229,15 +245,6 @@ import UIKit
                 rooms.append(result)
             }
             return rooms
-        }
-        Task {
-            do {
-                try roomListService?.subscribeToRooms(roomIds: updatedRooms.map({ $0.id }))
-                print("successfully subscribed to rooms")
-            } catch {
-                print("unable to subscribe to rooms: \(error)")
-            }
-            
         }
         
         return updatedRooms
@@ -260,6 +267,8 @@ import UIKit
     
 }
 extension MatrixManager: @preconcurrency RoomListEntriesListener {
+    
+    /// This delegate gets called when there are changes in the roomList (e.g. new message/reactions)
     func onUpdate(roomEntriesUpdate: [MatrixRustSDK.RoomListEntriesUpdate]) {
         var updatedRooms: [RoomListItem] = rawRoomListItems
         var changes = [CollectionDifference<MatrixRustSDK.RoomListItem>.Change]()
@@ -357,6 +366,7 @@ extension MatrixManager {
         }
        
     }
+    
     static func restoreSession(session: Session) async {
         do {
             let newClient = try await ClientBuilder()
@@ -375,6 +385,25 @@ extension MatrixManager {
         
         
     }
+    
+    /// We're using POST because matrix library doesn't allow registering users
+    static func registerUser(homeserver: String = AppConstants.homeserver, username: String, password: String) async -> Client? {
+        let body = MatrixRegistrationRequest(
+            username: username,
+            password: password,
+            auth: MatrixAuthStep1Request(
+                session: nil,
+                type: .dummy
+            )
+        )
+        do {
+            _ = try await body.execute()
+            return await self.login(homeserver: homeserver, email: username, password: password)
+        } catch {
+            print("Error registering user to matrix: \(error)")
+            return nil
+        }
+    }
 }
 
 struct SivRoom: Identifiable {
@@ -387,18 +416,6 @@ struct SivRoom: Identifiable {
     var membership: Membership = .invited
     let isEmpty: Bool = false
     var isMarkedUnread = true
-    
-//    init(room: Room) {
-//        self.id = room.id()
-//        self.avatarUrl = room.avatarUrl()
-//        self.displayName = room.displayName() ?? "no name"
-//        self.room = room
-//    }
-//    func getOtherDetails() {
-//        Task {
-//            isDirect = await room.isDirect()
-//        }
-//    }
 }
 
 extension Room {
@@ -455,7 +472,7 @@ extension RoomListItem {
     func convertToBasicSivRoom() -> SivRoom {
 //        let isDirect = await self.isDirect()
         let room = try?  self.fullRoom()
-        var isMarkedUnread: Bool = true
+        let isMarkedUnread: Bool = true
         return SivRoom(
             id: self.id(),
             avatarUrl: self.avatarUrl(),
@@ -542,3 +559,5 @@ extension EventOrTransactionId {
         }
     }
 }
+
+

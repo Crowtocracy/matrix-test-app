@@ -35,6 +35,10 @@ extension Session {
         
     }
     
+    static func clearUserDefaults() {
+        UserDefaults.standard.removeObject(forKey: Session.userDefaultsKey)
+    }
+    
     struct SessionUserDefault: Codable {
         let accessToken: String
         let refreshToken: String?

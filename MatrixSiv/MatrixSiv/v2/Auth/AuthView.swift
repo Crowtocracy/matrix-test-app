@@ -20,12 +20,19 @@ struct AuthView: View {
                         .sivButtonStyle()
                 }
                 
+                /// Uncomment this block whe you have set your appservice
+                /*
                 NavigationLink  {
                     CreateAccountView()
                 } label: {
                     Text("Create account")
                         .sivButtonStyle(style: .tertiary)
                 }
+                */
+                
+                Text("Set AppConstants to use data from your appservice to be able to register users")
+                    .multilineTextAlignment(.center)
+                    .font(.footnote)
             }
         }
         
